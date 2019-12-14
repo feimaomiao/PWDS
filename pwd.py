@@ -2,7 +2,7 @@
 import sqlite3, os, enc, random, time, sys, hashlib, shutil
 from enc import encrypt as enc, decrypt as dec, newd, EncryptionError
 from funcs import buildColors, emptyline
-from datetime import datetime
+from datetime import datetime, timedelta
 try:
 	# Readchar and pyperclip are not inbuilt modules
 	import readchar, pyperclip
@@ -797,16 +797,39 @@ class userInterface():
 	def importFile(self):
 		# import files from backups 
 
-		# location
+		# backup location
 		backupName = hashlib.pbkdf2_hmac('sha224', 
 						self.userName.encode('utf-32'), b'e302b662ae87d6facf8879dc1dabc573', 
 						500000).hex() if self.preferences.get('hashBackupFile') else self.userName
-
-		latestBackupFile = max([int(x[-12:-3]) for x in [f for d, b, f in os.walk(os.path.join(os.path.expanduser('~/Library/.pbu/.'+ backupName)))][0]])
-		print(latestBackupFile)
-		time.sleep(100)
-
-
+		try:
+			# Could possibly return an error if no backup files could be found
+			latestBackupFile = max([int(x[-12:-3]) for x in [f for d, b, f in os.walk(os.path.expanduser('~/Library/.pbu/.'+ backupName))][0]])
+		except ValueError:
+			print(colors.red('Error:'), colors.orange('The backup folder has no backups avaliable! We are sorry but we cannot extract your file!'))	
+			return None
+		# print(latestBackupFile)
+		# change string into a datetime stamp
+		t = str(datetime.strptime(str(latestBackupFile), '%Y%j%H'))
+		print(colors.green('Your latest backup is on {0} {1} {2}'.format(colors.purple(t.split()[0]), colors.green('around'),colors.purple(t.split()[1][:5]))))
+		# ask if the user actually wants to backup
+		print(colors.pink('Do you want to restore from the copy?[yn]\nThis will quit the program'))
+		yn = readchar.readchar()
+		self.log('restored from backup')
+		if yn == 'y':
+			# Copies the file and would replace current file
+			shutil.copy2(
+				os.path.join(os.path.expanduser('~/Library/.pbu/.' + backupName), '.'+str(latestBackupFile) + '.db'),
+				# original file
+				os.path.join(os.path.expanduser('~/.password'), '.' + self.userName + '.db'))
+			waitForInput()
+			emptyline() if not self.verbose else None
+			raise normalQuit
+		else:
+			# File will not be imported
+			print(colors.lightblue('File not imported'))
+			self.log('File is not imported')
+			waitForInput()
+			emptyline() if not self.verbose else None
 
 	# def UI(self):
 	# 	userAction = input(colors.lightblue('Please enter what do you want to do:\n'))
