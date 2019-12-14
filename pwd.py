@@ -441,7 +441,6 @@ class userInterface():
 		# joins path to determine file location
 		backupFile = os.path.join(self.preferences.get('backupLocation'),'.' + backupName,'.' +fileTime+'.db')
 
-		# 493- 500: Will not raise shutil error even if recent backup is in an hour--> 
 		# shutil.copy is willing to replace
 		# Copies file to backup file
 		shutil.copy2(
@@ -471,7 +470,11 @@ class userInterface():
 						500000).hex() if self.preferences.get('hashBackupFile') else self.userName
 
 		# get the time of the latest backup
-		latestBackup = max([int(fName[1:-3]) for fName in [files for r, d,files in os.walk(os.path.join(self.preferences.get('backupLocation'),'.'+ backupName))][0]])
+		try:
+			latestBackup = max([int(fName[1:-3]) for fName in [files for r, d,files in os.walk(os.path.join(self.preferences.get('backupLocation'),'.'+ backupName))][0]])
+		except ValueError:
+			
+		# Will not raise shutil error even if recent backup is in an hour--> 
 
 		# Gets current time
 		currentTime = int(str(time.localtime(now).tm_year).zfill(4) + str(time.localtime(now).tm_yday).zfill(3) + str(time.localtime(now).tm_hour).zfill(2))
@@ -938,7 +941,7 @@ def linktodb():
 	else:
 		raise normalQuit
 	finally:
-		user.checkBackup()
+		user.checkBackup() if user.preferences.get('createBackupFile') else None
 		emptyline() if not user.verbose else None
 
 		# saves file
