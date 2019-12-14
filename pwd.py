@@ -14,8 +14,6 @@ except ModuleNotFoundError:
 	pipmain(['install','readchar'])
 	pipmain(['install','pyperclip'])
 
-
-
 	# Imports module
 	import pyperclip, readchar
 
@@ -933,7 +931,7 @@ def linktodb():
 		raise 
 		# user enters key binding ctrl+c
 	except KeyboardInterrupt:
-		print('\n\n\n\n')
+		print('\n\n\n\n\n\n\n\n')
 		user.log('User quits (\'KeyboardInterrupt\')')
 		raise normalQuit
 	else:
