@@ -5,6 +5,14 @@ except ModuleNotFoundError:
 	# System call to install modules
 	os.system('python3 -m pip install readchar')
 
+#Wrong password error 
+class WrongPassWordError(Exception): 
+	pass
+
+# User quits via a normal method(Keyboard interrupt, raise quit)
+class normalQuit(Exception):
+	pass
+
 def buildColors(trueOrFalse):
 
 	# colors filled with actual colors

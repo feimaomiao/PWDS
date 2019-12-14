@@ -1,28 +1,26 @@
 # usr/bin/python3
 import sqlite3, os, enc, random, time, sys, hashlib, shutil
 from enc import encrypt as enc, decrypt as dec, newd, EncryptionError
-from funcs import buildColors, emptyline
+from funcs import *
 from datetime import datetime, timedelta
 try:
 	# Readchar and pyperclip are not inbuilt modules
 	import readchar, pyperclip
 except ModuleNotFoundError: 
+	try:
+	    from pip import main as pipmain
+	except ImportError:
+	    from pip._internal import main as pipmain
+	pipmain(['install','readchar'])
+	pipmain(['install','pyperclip'])
 
-	# System call to install modules
-	os.system('python3 -m pip install pyperclip')
+
 
 	# Imports module
-	import pyperclip
-
-#Wrong password error 
-class WrongPassWordError(Exception): 
-	pass
-
-# User quits via a normal method(Keyboard interrupt, raise quit)
-class normalQuit(Exception):
-	pass
+	import pyperclip, readchar
 
 global colors
+
 # Assign colors to colors --> Default is true
 colors = buildColors(True)
 
