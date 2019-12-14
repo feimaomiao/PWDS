@@ -717,11 +717,13 @@ class userInterface():
 	def exportLog(self):
 		exportType = self.preferences.get('exportType')
 
+		# Current logs
 		cLogs = self.cursor.execute('SELECT * FROM log').fetchall()
 
 		# Gets users export location
 		exportLocation = self.getExportLocation(bool(self.preferences.get('useDefaultLocation')))
-		exportType = 'json'
+		# get backup location
+
 		if os.path.isfile(os.path.join(exportLocation, self.userName +'_LOGS'+ '.' + exportType)):
 			# Export already exists
 			print(colors.yellow('You already have an exported file in %s! Please try again!') % exportLocation)
@@ -731,6 +733,7 @@ class userInterface():
 			return None
 
 		self.log('Asked for Log output request')
+
 		if exportType == 'db':
 			# Database
 			exportFile = sqlite3.connect(os.path.join(exportLocation ,self.userName +'_LOGS'+ '.db'))
@@ -763,6 +766,7 @@ class userInterface():
 
 					# Creates header in csv files
 					csvWriter.writerow(['Timestamp', 'Action'])
+
 					# Use standardized csv writer because ',' could appear in encrypted passwords
 					for entries in cLogs:
 						csvWriter.writerow([entries[0], entries[1]])
@@ -790,21 +794,31 @@ class userInterface():
 
 		emptyline() if not self.verbose else None
 
+	def importFile(self):
+		# import files from backups 
+
+		# location
+		backupName = hashlib.pbkdf2_hmac('sha224', 
+						self.userName.encode('utf-32'), b'e302b662ae87d6facf8879dc1dabc573', 
+						500000).hex() if self.preferences.get('hashBackupFile') else self.userName
+
+		latestBackupFile = max([int(x[-12:-3]) for x in [f for d, b, f in os.walk(os.path.join(os.path.expanduser('~/Library/.pbu/.'+ backupName)))][0]])
+		print(latestBackupFile)
+		time.sleep(100)
 
 
 
-
-	def UI(self):
-		userAction = input(colors.lightblue('Please enter what do you want to do:\n'))
-		emptyline() if not self.verbose else None
-		if userAction not in self.actions.keys():
-			print(colors.red(userAction), colors.yellow('is not in your list of commands!\nPlease refer to the chart below for your actions!'))
-			self.help()
-			emptyline() if not self.verbose else None
-			self.UI()
-		else:
-			action = self.actions.get(userAction)
-			print(action)
+	# def UI(self):
+	# 	userAction = input(colors.lightblue('Please enter what do you want to do:\n'))
+	# 	emptyline() if not self.verbose else None
+	# 	if userAction not in self.actions.keys():
+	# 		print(colors.red(userAction), colors.yellow('is not in your list of commands!\nPlease refer to the chart below for your actions!'))
+	# 		self.help()
+	# 		emptyline() if not self.verbose else None
+	# 		self.UI()
+	# 	else:
+	# 		action = self.actions.get(userAction)
+	# 		print(action)
 
 def checkdir(): 
 
@@ -883,7 +897,8 @@ def linktodb():
 			# user.changeCommand()
 			# user.checkBackup()
 			# user.exportPassword()
-			user.exportLog()
+			# user.exportLog()
+			user.importFile()
 			# [print('{0:40}{1:40}\n'.format(str(x), str(value))) for x, value in user.actions.items()]
 			# time.sleep(100000)
 			# user.quit()
@@ -900,7 +915,9 @@ def linktodb():
 	else:
 		raise normalQuit
 	finally:
+		user.checkBackup()
 		emptyline() if not user.verbose else None
+
 		# saves file
 		user.file.commit()
 
