@@ -60,3 +60,8 @@ def emptyline(lines=100):
 		# move up one line and clear whole line
 		sys.stdout.write("\033[F") 
 		sys.stdout.write("\033[K") 
+
+def waitForInput(colors):
+	print(colors.green('Press any key to continue...'))
+	readchar.readchar()
+	return ''
