@@ -469,8 +469,8 @@ class userInterface():
 		try:
 			latestBackup = max([int(fName[1:-3]) for fName in [files for r, d,files in os.walk(os.path.join(self.preferences.get('backupLocation'),'.'+ backupName))][0]])
 		except ValueError:
-			
-		# Will not raise shutil error even if recent backup is in an hour--> 
+			self.backup() if user.preferences.get('createBackupFile') else None
+			return None
 
 		# Gets current time
 		currentTime = int(str(time.localtime(now).tm_year).zfill(4) + str(time.localtime(now).tm_yday).zfill(3) + str(time.localtime(now).tm_hour).zfill(2))
