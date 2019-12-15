@@ -5,7 +5,7 @@
 * The entire program started with a little summer project and I never thought it would develop into a large-scale project :smiling_imp:
 * The whole program is built on python3
 - - - -
-##How does it work##
+## How does it work ##
 * PWDS creates a database and allows you to change different attributes of it.
 * Regular backup will be done.
 * Cleverly uses clear screen function so that your passwords will not be kept on the terminal screen
