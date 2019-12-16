@@ -30,4 +30,10 @@ Deletes item from database `still in development`
 #### Changed encryption method #### 
 Password is now hashed and hexified before encrypting to prevent injection attacks  
 improved 'Delete' function `still in development`
+- - - -
+### 2019/12/16 15:24 ###
+#### Finished function delete ####
+Finally. Introducing function 'delete' from database
+slight alteration in var types
+- - - -
 
