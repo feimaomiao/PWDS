@@ -2,6 +2,8 @@ import sqlite3, os, enc, random, time, sys, hashlib, shutil, readchar, pyperclip
 from datetime import datetime, timedelta
 from funcs import *
 from enc import encrypt as enc, decrypt as dec, newd, EncryptionError
+
+# user class. All actions are done under a class structure.
 class userInterface():
 
 	# __init__ builds the variables in class userInterface
@@ -783,7 +785,7 @@ class userInterface():
 		# print(latestBackupFile)
 		# change string into a datetime stamp
 		t = str(datetime.strptime(str(latestBackupFile), '%Y%j%H'))
-		print(colors.green('Your latest backup is on {0} {1} {2}'.format(colors.purple(t.split()[0]), colors.green('around'),colors.purple(t.split()[1][:5]))))
+		print(colors.green('Your latest backup is on {day} {around} {time}'.format(day=colors.purple(t.split()[0]), around=colors.green('around'),time=colors.purple(t.split()[1][:5]))))
 		# ask if the user actually wants to backup
 		print(colors.pink('Do you want to restore from the copy?[yn]\nThis will quit the program'))
 		yn = readchar.readchar()
@@ -796,7 +798,7 @@ class userInterface():
 				os.path.join(os.path.expanduser('~/.password'), '.' + self.userName + '.db'))
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
-			raise normalQuit
+			quit()
 		else:
 			# File will not be imported
 			print(colors.lightblue('File not imported'))
