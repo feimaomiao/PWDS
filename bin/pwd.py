@@ -86,7 +86,7 @@ def linktodb():
 		print('This password is not avaliable! Please try agian!')
 		waitForInput(colors)
 		emptyline()
-		return linktodb()
+		raise EncryptionError
 
 	emptyline()
 

@@ -549,21 +549,49 @@ class userInterface():
 
 
 	def delete(self):
-		currentPwds = [x for x in range(1000)]
-		# [x for x in self.cursor.execute('SELECT * FROM password').fetchall()]
+		currentPwds = [(x, x+5) for x in range(10)]
+		# [x for x in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]
 		currentTerminalSize = shutil.get_terminal_size().lines - 10
+		currentTerminalClmn = shutil.get_terminal_size().columns
 		i = 0
+		print(colors.blue(f'This here are all your passwords. There are {len(currentPwds)} of them in total'))
 		try:
 			while i < len(currentPwds):
-				print(len(currentPwds))
+				print('{0:18}|{1:10}'.format(colors.yellow('index'), colors.green('key')))
+				print(colors.lightgreen('-'*currentTerminalClmn))
 				for m in range(currentTerminalSize):
-					print(currentPwds[i])
+					print('{index:18}|{key:10}'.format(index=colors.yellow(currentPwds[i][0]), key=colors.green(currentPwds[i][1])))
 					i += 1
 				waitForInput(colors)
 				emptyline(currentTerminalSize + 4)
-				print(i)
 		except IndexError:
+			waitForInput(colors)
+			emptyline()
 			pass
+		correctInput = False
+		while not correctInput:
+			# print(currentPwds)
+			delete = input(colors.red('Which of these do you want to delete?\nSyntax:\n[Delete with index inputted]: "i 1"\n[Delete with key inputted]: "n gmail"'))
+			action = delete.split()[0]
+			fileToDel = ' '.join(delete.split()[1:])
+			if action == 'i':
+				try:
+					fileToDel = currentPwds[int(fileToDel) - 1]
+					print(fileToDel)
+				except ValueError as e:
+					print(colors.red('This is not a valid value in your database! Please try again'))
+					waitForInput(colors)
+					emptyline()
+					pass
+				except IndexError:
+					print(colors.red('This is not a valid value in your database! Please try again'))
+					waitForInput(colors)
+					emptyline()
+					pass
+
+
+
+
 
 
 
