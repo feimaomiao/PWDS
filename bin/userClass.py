@@ -551,8 +551,7 @@ class userInterface():
 
 	def delete(self):
 		# Get current passwords
-		currentPwds = [(x, x+ 5 )for x in range(10)]
-		# [x for x in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]
+		currentPwds = [x for x in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]
 		# Get terminal size
 		currentTerminalSize = shutil.get_terminal_size().lines - 10
 		currentTerminalClmn = shutil.get_terminal_size().columns
@@ -568,35 +567,36 @@ class userInterface():
 				waitForInput(colors)
 				emptyline(currentTerminalSize + 4)
 		except IndexError:
+			print(colors.lightgreen('-'*currentTerminalClmn))
 			waitForInput(colors)
-			emptyline()
 			pass
 		# Prints current password Index and Key
-
 
 		correctInput = False
 		# Allows error inputs, goes back to this line after error inputs
 		while not correctInput:
 			try:
 				delete = input(colors.orange('Which of these do you want to delete?\nSyntax:\n[Delete with index inputted]: "i 1"\n[Delete with key inputted]: "n gmail"\nPress "h" if you want to display all your passwords again.\n\n'))
+				# Ask for input
 				action = str(delete.split()[0]).lower()
 				fileToDel = str(' '.join(delete.split()[1:]))
 				# split gives out a list, ''join() returns back a string
 				if action == 'i':
 					# Search by index
-					fileToDel = currentPwds[int(fileToDel)][0]
+					fileToDel = currentPwds[int(fileToDel) - 1][0]
 					correctInput = True
 				elif action == 'n':
 					# search by name
 					fileToDel = [str(x[0]) for x in currentPwds if str(x[1]) == str(fileToDel)][0]
 					if len(fileToDel) == 0:
+						# Nothing is returned. Search query does not exists
 						print(colors.red('This is not a valid value in your database! Please try again'))
 						waitForInput(colors)
 						emptyline()
 						pass
 					correctInput = True
 				elif action == 'h':
-					# Requests to input again/
+					# Requests to input again
 					waitForInput(colors)
 					emptyline()
 					return self.delete()
@@ -610,16 +610,23 @@ class userInterface():
 				emptyline()
 				correctInput = False
 				continue
-		print(fileToDel)
+		file = self.cursor.execute('SELECT key FROM password WHERE id = (?)', (fileToDel,)).fetchone()[0]
+		# get file name
 		print(colors.red(
-			'Are you sure you want to delete this file?\nThe only way you would retrieve this password is from the most recent backup [yn]'))
+			'Are you sure you want to delete %s\'s stored password?\nThe only way you would retrieve this password is from the most recent backup [yn]' % file))
 		k = readchar.readchar()
 		if k.lower() != 'y':
 			print(colors.blue('Password not deleted'))
 			self.log('Password not deleted')
-		else:
-			print(colors.green(f'Password {str(fileToDel)} deleted'))
-			self.log(f'Deleted password {str(fileToDel)}')
+			return None
+		self.cursor.execute('''DELETE FROM password WHERE id = (?)''', (fileToDel,))
+		# Delete from database
+		print(colors.green(f'Password from {str(file)} deleted'))
+		self.log(f'Deleted password from{str(file)}')
+		# saves file
+		self.file.commit()
+		return None
+
 
 	# Prints user help, lists all actions
 	def help(self):
