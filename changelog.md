@@ -16,7 +16,7 @@
 	<p>pwd.py now only includes prompt and calling class</p>
 	<p>neater codes, easier references</p>
 </details>
-- - - -           
+- - - -  
 #### 2019/12/16 01:48 ####
 <details>
 	<summary>New procedure in login function</summary>
@@ -26,5 +26,5 @@
 	<summary>Altered pwd.py login process</summary>
 	<p>if newuser: {initialise...login}else: {login}-->if newuser: {initialise} {login} </p>
 </details>
-* Added error handling 'instantQuit' in pwd.py    
+* Added error handling 'instantQuit' in pwd.py  
 * New error handling prevents possible flaw while importing backups.  
