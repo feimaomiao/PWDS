@@ -49,7 +49,8 @@ class userInterface():
 		self.file.commit()
 
 	def initialiseNewUser(self):
-
+		global colors
+		colors = buildColors(True)
 		def requestforinput(item, usedlist): 
 
 			# Does not allow duplicatews
@@ -549,8 +550,10 @@ class userInterface():
 
 
 	def delete(self):
-		currentPwds = [(x, x+5) for x in range(10)]
+		# Get current passwords
+		currentPwds = [(x, x+ 5 )for x in range(10)]
 		# [x for x in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]
+		# Get terminal size
 		currentTerminalSize = shutil.get_terminal_size().lines - 10
 		currentTerminalClmn = shutil.get_terminal_size().columns
 		i = 0
@@ -568,45 +571,46 @@ class userInterface():
 			waitForInput(colors)
 			emptyline()
 			pass
+		# Prints current password Index and Key
+
+
 		correctInput = False
+		# Allows error inputs, goes back to this line after error inputs
 		while not correctInput:
-			# print(currentPwds)
-			delete = input(colors.red('Which of these do you want to delete?\nSyntax:\n[Delete with index inputted]: "i 1"\n[Delete with key inputted]: "n gmail"\n'))
-			action = delete.split()[0]
-			fileToDel = ' '.join(delete.split()[1:])
-			if action == 'i':
-				try:
+			try:
+				delete = input(colors.orange('Which of these do you want to delete?\nSyntax:\n[Delete with index inputted]: "i 1"\n[Delete with key inputted]: "n gmail"\nPress "h" if you want to display all your passwords again.\n\n'))
+				action = str(delete.split()[0]).lower()
+				fileToDel = str(' '.join(delete.split()[1:]))
+				# split gives out a list, ''join() returns back a string
+				if action == 'i':
+					# Search by index
 					fileToDel = currentPwds[int(fileToDel)][0]
 					correctInput = True
-				except ValueError as e:
-					print(colors.red('This is not a valid value in your database! Please try again'))
-					waitForInput(colors)
-					emptyline()
-					pass
-				except IndexError:
-					print(colors.red('This is not a valid value in your database! Please try again'))
-					waitForInput(colors)
-					emptyline()
-					pass
-			elif action == 'n':
-				try:
-					fileToDel = [x[0] for x in currentPwds if str(x[1]) == str(fileToDel)]
-					print(fileToDel)
+				elif action == 'n':
+					# search by name
+					fileToDel = [str(x[0]) for x in currentPwds if str(x[1]) == str(fileToDel)][0]
 					if len(fileToDel) == 0:
 						print(colors.red('This is not a valid value in your database! Please try again'))
 						waitForInput(colors)
 						emptyline()
 						pass
-					
-
-
-
-
-
-
-
-
-
+					correctInput = True
+				elif action == 'h':
+					# Requests to input again/
+					waitForInput(colors)
+					emptyline()
+					return self.delete()
+				else:
+					# User enters jibberish
+					raise ValueError
+			except (IndexError, ValueError) as err:
+				# Goes back to line right after while 
+				print(colors.red('This is not a valid value in your database! Please try again'))
+				waitForInput(colors)
+				emptyline()
+				correctInput = False
+				continue
+		print(fileToDel)
 
 	# Prints user help, lists all actions
 	def help(self):

@@ -1,6 +1,6 @@
 # Matthew Lam
 # module designed to import to [[encrypt]] and [[decrypt]]
-import random
+import random, hashlib
 class EncryptionError(Exception):
 	pass
 
@@ -284,7 +284,7 @@ def encsp(string, password):
 
 def encrypt(encs, pwd):
 	encs = str(encs)
-	pwd = str(pwd)
+	pwd = str(hashlib.pbkdf2_hmac('sha256', str(pwd).encode('utf-32'), ''.join(sorted(pwd)).encode('utf-32'), 300000).hex()) + str(hashlib.pbkdf2_hmac('sha256', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex())
 	def strtoint(stringinput):
 		integers = ''
 		stringinput = str(stringinput)
@@ -307,7 +307,6 @@ def encrypt(encs, pwd):
 			c += newdec.get(int(chars))
 		return c
 	encs = str(encs)
-	pwd = str(pwd)
 	eintfinal = int(strtoint(str(encs))) * int(strtoint(str(pwd)))
 	lenth = str(len(strtoint(encs))).zfill(4)
 	estr = inttostr(eintfinal)
@@ -350,6 +349,7 @@ def decrypt(decs, pwd):
 		for chars in l:
 			c += decd.get(int(chars))
 		return c
+	pwd = str(hashlib.pbkdf2_hmac('sha256', str(pwd).encode('utf-32'), ''.join(sorted(pwd)).encode('utf-32'), 300000).hex()) + str(hashlib.pbkdf2_hmac('sha256', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex())
 	orglen = int(decs[-5: -1])
 	decs = decs[:-5]
 	dintfinal = encsp(decs, pwd)

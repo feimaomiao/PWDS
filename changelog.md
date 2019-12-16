@@ -26,4 +26,8 @@ New error handling prevents possible flaw while importing backups.
 #### introduce delete function ####
 Deletes item from database `still in development`
 - - - -  
+### 2019/12/16 11:50 ###
+#### Changed encryption method #### 
+Password is now hashed and hexified before encrypting to prevent injection attacks  
+improved 'Delete' function `still in development`
 
