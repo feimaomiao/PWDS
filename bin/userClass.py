@@ -571,13 +571,13 @@ class userInterface():
 		correctInput = False
 		while not correctInput:
 			# print(currentPwds)
-			delete = input(colors.red('Which of these do you want to delete?\nSyntax:\n[Delete with index inputted]: "i 1"\n[Delete with key inputted]: "n gmail"'))
+			delete = input(colors.red('Which of these do you want to delete?\nSyntax:\n[Delete with index inputted]: "i 1"\n[Delete with key inputted]: "n gmail"\n'))
 			action = delete.split()[0]
 			fileToDel = ' '.join(delete.split()[1:])
 			if action == 'i':
 				try:
-					fileToDel = currentPwds[int(fileToDel) - 1]
-					print(fileToDel)
+					fileToDel = currentPwds[int(fileToDel)][0]
+					correctInput = True
 				except ValueError as e:
 					print(colors.red('This is not a valid value in your database! Please try again'))
 					waitForInput(colors)
@@ -588,6 +588,18 @@ class userInterface():
 					waitForInput(colors)
 					emptyline()
 					pass
+			elif action == 'n':
+				try:
+					fileToDel = [x[0] for x in currentPwds if str(x[1]) == str(fileToDel)]
+					print(fileToDel)
+					if len(fileToDel) == 0:
+						print(colors.red('This is not a valid value in your database! Please try again'))
+						waitForInput(colors)
+						emptyline()
+						pass
+					
+
+
 
 
 
