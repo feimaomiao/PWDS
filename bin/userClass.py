@@ -611,6 +611,15 @@ class userInterface():
 				correctInput = False
 				continue
 		print(fileToDel)
+		print(colors.red(
+			'Are you sure you want to delete this file?\nThe only way you would retrieve this password is from the most recent backup [yn]'))
+		k = readchar.readchar()
+		if k.lower() != 'y':
+			print(colors.blue('Password not deleted'))
+			self.log('Password not deleted')
+		else:
+			print(colors.green(f'Password {str(fileToDel)} deleted'))
+			self.log(f'Deleted password {str(fileToDel)}')
 
 	# Prints user help, lists all actions
 	def help(self):
