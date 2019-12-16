@@ -86,7 +86,7 @@ def linktodb():
 		print('This password is not avaliable! Please try agian!')
 		waitForInput(colors)
 		emptyline()
-		raise EncryptionError
+		raise EncryptionError1
 
 	emptyline()
 
@@ -113,7 +113,7 @@ def linktodb():
 		# user.exportPassword()
 		# user.exportLog()
 		# user.importFile()
-		user.delete()
+		# user.delete()
 		# [print('{0:40}{1:40}\n'.format(str(x), str(value))) for x, value in user.actions.items()]
 		time.sleep(100000)
 		# user.quit()
