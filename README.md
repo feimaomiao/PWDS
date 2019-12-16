@@ -9,8 +9,8 @@
 * PWDS creates a database and allows you to change different attributes of it.
 * Regular backup will be done.
 * Cleverly uses clear screen function so that your passwords will not be kept on the terminal screen
-* Even if you mess up, there will be a backup to save your day! Import backups are now avaliable!
-- - - -
+* Even if you mess up, there will be a backup to save your day! Import backups are now avaliable!  
+- - - -  
 ## Possible problems you may encounter ##  
 ### WrongPasswordError ###  
 * As its name suggests, you probably entered the wrong password. 
@@ -25,6 +25,7 @@
 ## Exports ##
 * Sounds strange but we do let you export your saved password and logs in both encrypted and non-encrypted form.  
 Avaliable output format includes:  
-.txt                  | .csv                               | .json                              | .db  
---------------------- | ---------------------------------- | ---------------------------------- | -----------------------  
-Plain text file       | Comma Seperated Values file        | JavaScript Object Notation         | SQL Database FIle  
+
+.txt|.csv|.json| .db  
+---- | ----| ---- | ----
+Plain text file | Comma Seperated Values file | JavaScript Object Notation | SQL Database FIle   
