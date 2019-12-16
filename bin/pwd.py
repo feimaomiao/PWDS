@@ -102,38 +102,37 @@ def linktodb():
 		if newUser:
 			user.initialiseNewUser()
 
-			# logs in--> Does not do that in initialise New User to prevent recursion error
-			user.login()
-
-		else:
-			# Returning user will be directed immediately to login page
-			user.login()
-			# user.new()
-			# user.get()
-			# user.changePassword()
-			# user.backup()
-			# user.changeCommand()
-			# user.checkBackup()
-			# user.exportPassword()
-			# user.exportLog()
-			user.importFile()
-			# [print('{0:40}{1:40}\n'.format(str(x), str(value))) for x, value in user.actions.items()]
-			# time.sleep(100000)
-			# user.quit()
+		# Returning user will be directed immediately to login page
+		user.login()
+		# user.new()
+		# user.get()
+		# user.changePassword()
+		# user.backup()
+		# user.changeCommand()
+		# user.checkBackup()
+		# user.exportPassword()
+		# user.exportLog()
+		user.importFile()
+		# [print('{0:40}{1:40}\n'.format(str(x), str(value))) for x, value in user.actions.items()]
+		# time.sleep(100000)
+		# user.quit()
 
 	except normalQuit:
 		# user calls function 'quit'
 		user.log('User quits (\'Command =Quit\')')
+		user.checkBackup() if user.preferences.get('createBackupFile') else None
 		raise 
 		# user enters key binding ctrl+c
 	except KeyboardInterrupt:
 		print('\n\n\n\n\n\n\n\n')
 		user.log('User quits (\'KeyboardInterrupt\')')
 		raise normalQuit
+		user.checkBackup() if user.preferences.get('createBackupFile') else None
+	except instantQuit:
+		raise normalQuit
 	else:
 		raise normalQuit
 	finally:
-		user.checkBackup() if user.preferences.get('createBackupFile') else None
 		emptyline() if not user.verbose else None
 
 		# saves file
@@ -143,6 +142,7 @@ def linktodb():
 		user.cursor.close()
 		user.file.close()
 		# raise normalQuit	
+		raise normalQuit
 
 
 if __name__ == '__main__':
