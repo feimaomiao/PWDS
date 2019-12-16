@@ -547,6 +547,27 @@ class userInterface():
 		# Raises quit -->Goes to global scope before quits
 		raise normalQuit
 
+
+	def delete(self):
+		currentPwds = [x for x in range(1000)]
+		# [x for x in self.cursor.execute('SELECT * FROM password').fetchall()]
+		currentTerminalSize = shutil.get_terminal_size().lines - 10
+		i = 0
+		try:
+			while i < len(currentPwds):
+				print(len(currentPwds))
+				for m in range(currentTerminalSize):
+					print(currentPwds[i])
+					i += 1
+				waitForInput(colors)
+				emptyline(currentTerminalSize + 4)
+				print(i)
+		except IndexError:
+			pass
+
+
+
+
 	# Prints user help, lists all actions
 	def help(self):
 
@@ -798,10 +819,12 @@ class userInterface():
 				os.path.join(os.path.expanduser('~/.password'), '.' + self.userName + '.db'))
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
-			quit()
+			raise instantQuit
 		else:
 			# File will not be imported
 			print(colors.lightblue('File not imported'))
 			self.log('File is not imported')
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
+
+

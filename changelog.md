@@ -21,3 +21,9 @@ instantQuit skips userInterface.checkbackup() function and enhances performance
 if newuser: {initialise...login}else: {login}-->if newuser: {initialise} {login}  
 #### Added error handling 'instantQuit' in pwd.py  ####
 New error handling prevents possible flaw while importing backups.  
+- - - -
+### 2019/12/16 08:49 ###
+#### introduce delete function ####
+Deletes item from database `still in development`
+- - - -  
+

@@ -112,11 +112,13 @@ def linktodb():
 		# user.checkBackup()
 		# user.exportPassword()
 		# user.exportLog()
-		user.importFile()
+		# user.importFile()
+		user.delete()
 		# [print('{0:40}{1:40}\n'.format(str(x), str(value))) for x, value in user.actions.items()]
-		# time.sleep(100000)
+		time.sleep(100000)
 		# user.quit()
-
+	except WrongPassWordError:
+		raise 
 	except normalQuit:
 		# user calls function 'quit'
 		user.log('User quits (\'Command =Quit\')')
@@ -141,8 +143,6 @@ def linktodb():
 		# closes cursor and file
 		user.cursor.close()
 		user.file.close()
-		# raise normalQuit	
-		raise normalQuit
 
 
 if __name__ == '__main__':
