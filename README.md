@@ -25,6 +25,6 @@
 ## Exports ##
 * Sounds strange but we do let you export your saved password and logs in both encrypted and non-encrypted form.  
 * Avaliable output format includes:  
-Plain text file(.txt) | Comma Seperated Values file (.csv) | JavaScript Object Notation (.json) | SQL Database File (.db)  
+.txt                  | .csv                               | .json                              | .db
 --------------------- | ---------------------------------- | ---------------------------------- | -----------------------  
-- - - -
+Plain text file       | Comma Seperated Values file        | JavaScript Object Notation         | SQL Database FIle
