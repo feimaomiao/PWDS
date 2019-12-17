@@ -36,4 +36,14 @@ improved 'Delete' function `still in development`
 Finally. Introducing function 'delete' from database
 slight alteration in var types
 - - - -
-
+### 2019/12/16 16:33 ###
+#### Edited encryption ####
+Changed password hashing from 'sha256' to 'sha512'
+- - - -
+### 2019/12/16 22:11 ###
+#### A reform in database storage ####
+All 'key' values inside the database is now slightly encrypted //symmetrical  
+logs are includeed  
+#### Encryption of keys
+password hashing now uses `sha512(password) + sha512(''.join(sorted(password, reversed=True)))`  
+longer password allows higher security  
