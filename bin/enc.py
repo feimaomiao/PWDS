@@ -284,7 +284,7 @@ def encsp(string, password):
 
 def encrypt(encs, pwd):
 	encs = str(encs)
-	pwd = str(hashlib.pbkdf2_hmac('sha256', str(pwd).encode('utf-32'), ''.join(sorted(pwd)).encode('utf-32'), 300000).hex()) + str(hashlib.pbkdf2_hmac('sha256', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex())
+	pwd = str(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd)).encode('utf-32'), 300000).hex()) + str(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex())
 	def strtoint(stringinput):
 		integers = ''
 		stringinput = str(stringinput)
@@ -349,7 +349,7 @@ def decrypt(decs, pwd):
 		for chars in l:
 			c += decd.get(int(chars))
 		return c
-	pwd = str(hashlib.pbkdf2_hmac('sha256', str(pwd).encode('utf-32'), ''.join(sorted(pwd)).encode('utf-32'), 300000).hex()) + str(hashlib.pbkdf2_hmac('sha256', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex())
+	pwd = str(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd)).encode('utf-32'), 300000).hex()) + str(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex())
 	orglen = int(decs[-5: -1])
 	decs = decs[:-5]
 	dintfinal = encsp(decs, pwd)
