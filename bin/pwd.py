@@ -8,13 +8,15 @@ try:
 	# Readchar and pyperclip are not inbuilt modules
 	import readchar, pyperclip
 except ModuleNotFoundError: 
+
+	import site
 	try:
 	    from pip import main as pipmain
 	except ImportError:
 	    from pip._internal import main as pipmain
 	pipmain(['install','readchar'])
 	pipmain(['install','pyperclip'])
-
+	reload(site)
 	# Imports module
 	import pyperclip, readchar
 
@@ -114,6 +116,7 @@ def linktodb():
 		# user.exportLog()
 		# user.importFile()
 		# user.delete()
+		user.changePreferences()
 		# [print('{0:40}{1:40}\n'.format(str(x), str(value))) for x, value in user.actions.items()]
 		time.sleep(100000)
 		# user.quit()
