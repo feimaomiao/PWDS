@@ -1,7 +1,7 @@
 import sqlite3, os, enc, random, time, sys, hashlib, shutil, readchar, pyperclip
 from datetime import datetime, timedelta
 from funcs import *
-from enc import encrypt as enc, decrypt as dec, newd, EncryptionError
+from enc import encrypt as enc, decrypt as dec, newd, EncryptionError, encsp as encsp
 
 # user class. All actions are done under a class structure.
 class userInterface():
@@ -38,7 +38,7 @@ class userInterface():
 			self.preferences.update({prefs[0]: bool(int(prefs[3])) if prefs[3] in ['0','1', 0, 1] else prefs[3]}) 
 
 		# builds user actions
-		self.actions = {k: v for v, k in dict(self.cursor.execute('SELECT * FROM commands').fetchall()).items()}
+		self.actions = {encsp(k, self.password): v for v, k in dict(self.cursor.execute('SELECT * FROM commands').fetchall()).items()}
 
 		# Assign to verbose
 		self.verbose = self.preferences.get('verbose')
@@ -77,7 +77,8 @@ class userInterface():
 		self.cursor.execute('''CREATE TABLE log(logtime TEXT, log TEXT)''')
 
 		# create prerferences table
-		self.cursor.execute('''CREATE TABLE userPreferences(sysdefname TEXT,description TEXT, type TEXT, Value TEXT, 'Default' TEXT, possible TEXT)''')
+		self.cursor.execute('''CREATE TABLE userPreferences(
+			sysdefname TEXT,description TEXT, type TEXT, Value TEXT, 'Default' TEXT, possible TEXT)''')
 		self.log('Created file')
 
 		self.cursor.executemany(
@@ -96,7 +97,8 @@ class userInterface():
 			('encryptExportDb','Export files are encrypted','bool',True, True, 'True,False'),
 			('useDefaultLocation','Use default export location','bool',True, True, 'True,False'),
 			('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
-			('defaultExportLocation','Default export location', 'string',os.path.expanduser('~/Documents'), os.path.expanduser('~/Documents'), 'True,False'),
+			('defaultExportLocation','Default export location', 'string',os.path.expanduser('~/Documents'),
+			 os.path.expanduser('~/Documents'), 'True,False'),
 
 			# Backup preferences
 			('createBackupFile','backup','bool',True, True, 'True,False'),
@@ -111,7 +113,6 @@ class userInterface():
 		self.log('Preferences set')
 
 		# Save master password
-		# hashing time should be within 1 second --> group tested by using hashing urandom and salt as urandom for 100 times and taking the average as 0.65 seconds
 		self.cursor.execute('''INSERT INTO password VALUES (0,'master',?)''', (
 			# hashing
 			hashlib.pbkdf2_hmac(
@@ -127,13 +128,14 @@ class userInterface():
 		self.log('Stored master password')
 
 		# different shortcuts avaliable
-		actions = ['get','new','changepassword','generate','quit','delete','changecommand','exportpwd','exportlog','import file','user preferences','backup now'] 
+		actions = ['get','new','changepassword','generate','quit','delete','changecommand','exportpwd','exportlog','import file','user preferences',
+		'backup now'] 
 		
 		# built in function for 'Help'
 		defactions = ['??'] 
 
 		# Enters default function--> Help
-		self.cursor.execute('''INSERT INTO commands VALUES (?,?)''', ('help','??'))
+		self.cursor.execute('''INSERT INTO commands VALUES (?,?)''', ('help',encsp('??', self.password)))
 
 		for items in actions: 
 			# inputs user-defined passwords
@@ -141,7 +143,7 @@ class userInterface():
 			defactions.append(ucmd)
 
 			# saves user defined actions
-			self.cursor.execute('''INSERT INTO commands VALUES(?,?)''', (items, ucmd)) 
+			self.cursor.execute('''INSERT INTO commands VALUES(?,?)''', (items, encsp(ucmd, self.password))) 
 			emptyline() if not self.verbose else None
 
 		# Logs command input
@@ -151,14 +153,16 @@ class userInterface():
 		self.file.commit()
 
 		# build backup file
-		os.mkdir(os.path.join(os.path.expanduser('~/Library'),'.pbu','.'+ hashlib.pbkdf2_hmac('sha224', self.userName.encode('utf-32'), b'e302b662ae87d6facf8879dc1dabc573', 500000).hex()))
+		os.mkdir(os.path.join(os.path.expanduser('~/Library'),'.pbu','.'+ hashlib.pbkdf2_hmac('sha224', self.userName.encode('utf-32'),
+		 b'e302b662ae87d6facf8879dc1dabc573', 500000).hex()))
 
 	def login(self):
 		try:
 			# Gets user actions and preferences
 			self.buildActionsPreferences()
 			# Compares hashes
-			if self.cursor.execute('''SELECT password FROM password WHERE id = 0''').fetchone()[0] == hashlib.pbkdf2_hmac('sha512',self.password.encode('utf-32'),enc(self.password,self.password)[:-1].encode('utf-32'),750000).hex():
+			hexHash = hashlib.pbkdf2_hmac('sha512',self.password.encode('utf-32'),enc(self.password,self.password)[:-1].encode('utf-32'),750000).hex()
+			if self.cursor.execute('''SELECT password FROM password WHERE id = 0''').fetchone()[0] == hexHash :
 				self.log('Logged in') if bool(int(self.preferences.get('logLogin'))) else None
 			else:
 			 	self.log('Failed attempt') if bool(int(self.preferences.get('logLogin'))) else None
@@ -171,7 +175,9 @@ class userInterface():
 	def log(self, action):
 
 		# Logs exact time and Action
-		self.cursor.execute('''INSERT INTO log VALUES(?,?)''',(datetime.now().strftime("%Y-%m-%d %H:%M:%S:{}".format(str(datetime.now().microsecond)[:-3])),action))
+		self.cursor.execute('''INSERT INTO log VALUES(?,?)''',
+			(encsp(str(datetime.now().strftime("%Y-%m-%d %H:%M:%S:{}".format(str(datetime.now().microsecond)[:-3]))),
+			 self.password),encsp(action, self.password)))
 
 		# saves file 
 		self.file.commit()
@@ -188,7 +194,7 @@ class userInterface():
 			print('The list of your keys are:')
 
 			# only print the key (search query) of all. Prevents data beach
-			for k in [i[1] for i in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]:
+			for k in [encsp(i[1], self.password) for i in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]:
 				print(colors.orange(k))
 
 			waitForInput(colors)
@@ -213,7 +219,7 @@ class userInterface():
 			# Else --> Get value from key
 			# Fetchone reduces an extra tuple and increases running time
 
-			getResult = self.cursor.execute('SELECT * FROM password WHERE key =(?)', (getValue,)).fetchone()
+			getResult = self.cursor.execute('SELECT * FROM password WHERE key =(?)', (encsp(getValue, self.password),)).fetchone()
 			# If key exists -->
 			if getResult is not None:
 
@@ -221,7 +227,8 @@ class userInterface():
 				self.log('Searched for %s, valid output printed' % getValue)
 
 				# Format to 20 px
-				print(colors.cyan('{0:20}'.format(getResult[1])), '|', colors.lightgreen('{0:60}'.format(dec(getResult[2], self.password))))
+				print(colors.cyan('{0:20}'.format(encsp(getResult[1], self.password))),
+				 '|', colors.lightgreen('{0:60}'.format(dec(getResult[2], self.password))))
 
 				# Check if user preferences set to copy
 				copy = self.preferences.get('copyAfterGet')
@@ -257,9 +264,9 @@ class userInterface():
 		self.file.commit()
 
 	def new(self):
-
+		print(self.actions)
 		# Inserts new key into database
-		currentKeys = [x[1] for x in self.cursor.execute('SELECT * FROM password').fetchall()]
+		currentKeys = [encsp(x[1], self.password) for x in self.cursor.execute('SELECT * FROM password').fetchall()]
 		# Asks for key value
 		newInputKey = input(colors.cyan('Please enter what do you want to enter:\n'))
 
@@ -274,13 +281,14 @@ class userInterface():
 
 		# Asks for new password
 
-		print(colors.red('Please enter the new password:'),colors.green('\nYou can enter your generate keyword'), colors.yellow(generateKeyword), colors.green('to generate one.'))
+		print(colors.red('Please enter the new password:'),colors.green('\nYou can enter your generate keyword'),
+		 colors.yellow(generateKeyword), colors.green('to generate one.'))
 		# Does not show
 		newPassword = input()
 
 
 		if newPassword == generateKeyword:
-
+			print('Generate')
 			# generates password
 			newPassword = ''.join(random.choices(list(newd.keys()), k=19))
 
@@ -303,7 +311,7 @@ class userInterface():
 			del(newPassword)
 
 			# Saves password into database with key and index
-			self.cursor.execute('''INSERT INTO password VALUES(?,?,?)''', (currentIndex, newInputKey, encryptedPassword))
+			self.cursor.execute('''INSERT INTO password VALUES(?,?,?)''', (currentIndex, encsp(newInputKey, self.password), encryptedPassword))
 
 			# Logs the saved password
 			self.log('Inserted new password %s' % newInputKey)
@@ -333,6 +341,7 @@ class userInterface():
 
 			# Saves file--> Log and password
 			self.file.commit()
+			return None
 
 	def changePassword(self):
 
@@ -383,7 +392,8 @@ class userInterface():
 		self.cursor.execute('DELETE FROM password')
 
 		# Inserts new passwords into database 
-		newPwds = [(0, 'master', hashlib.pbkdf2_hmac('sha512', newEncPassword.encode('utf-32'), enc(newEncPassword, newEncPassword)[:-1].encode('utf-32'),750000).hex())]
+		newPwds = [(0, 'master', hashlib.pbkdf2_hmac('sha512', newEncPassword.encode('utf-32'), enc(newEncPassword,
+		 newEncPassword)[:-1].encode('utf-32'),750000).hex())]
 		for currentPwds in curPwds:
 			newPwds.append((currentPwds[0], currentPwds[1], enc(dec(currentPwds[2], self.password), newEncPassword)))
 		self.cursor.executemany('INSERT INTO password VALUES(?,?,?)', newPwds)
@@ -391,8 +401,7 @@ class userInterface():
 		# Sets user password to the new password
 		self.password = newEncPassword
 
-		# Deletes the password in current scope
-		del(newPassword)
+		return None
 
 	def backup(self):
 
@@ -444,13 +453,15 @@ class userInterface():
 
 		# get the time of the latest backup
 		try:
-			latestBackup = max([int(fName[1:-3]) for fName in [files for r, d,files in os.walk(os.path.join(self.preferences.get('backupLocation'),'.'+ backupName))][0]])
+			latestBackup = max([int(fName[1:-3]) for fName in [files for r, d,files in os.walk(os.path.join(self.preferences.get('backupLocation'),
+				'.'+ backupName))][0]])
 		except ValueError:
 			self.backup() if user.preferences.get('createBackupFile') else None
 			return None
 
 		# Gets current time
-		currentTime = int(str(time.localtime(now).tm_year).zfill(4) + str(time.localtime(now).tm_yday).zfill(3) + str(time.localtime(now).tm_hour).zfill(2))
+		currentTime = int(str(time.localtime(now).tm_year).zfill(4) +
+		 str(time.localtime(now).tm_yday).zfill(3) + str(time.localtime(now).tm_hour).zfill(2))
 
 		# Backs up if the difference is bigger than the time user needs to auto-backup
 		if ((currentTime - latestBackup) >= timeD.get(self.preferences.get('backupFileTime'))):
@@ -556,7 +567,7 @@ class userInterface():
 
 	def delete(self):
 		# Get current passwords
-		currentPwds = [x for x in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]
+		currentPwds = [(x[0], encsp(x[1]),self.password, x[2]) for x in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]
 		# Get terminal size
 		currentTerminalSize = shutil.get_terminal_size().lines - 10
 		currentTerminalClmn = shutil.get_terminal_size().columns
@@ -581,7 +592,9 @@ class userInterface():
 		# Allows error inputs, goes back to this line after error inputs
 		while not correctInput:
 			try:
-				delete = input(colors.orange('Which of these do you want to delete?\nSyntax:\n[Delete with index inputted]: "i 1"\n[Delete with key inputted]: "n gmail"\nPress "h" if you want to display all your passwords again.\n\n'))
+				print(colors.orange('Which of these do you want to delete?\nSyntax:\n[Delete with index inputted]: "i 1"'))
+				print(colors.orange('[Delete with key inputted]: "n gmail"\nPress "h" if you want to display all your passwords again.\n'))
+				delete = input()
 				# Ask for input
 				action = str(delete.split()[0]).lower()
 				fileToDel = str(' '.join(delete.split()[1:]))
@@ -617,8 +630,8 @@ class userInterface():
 				continue
 		file = self.cursor.execute('SELECT key FROM password WHERE id = (?)', (fileToDel,)).fetchone()[0]
 		# get file name
-		print(colors.red(
-			'Are you sure you want to delete %s\'s stored password?\nThe only way you would retrieve this password is from the most recent backup [yn]' % file))
+		print(colors.red('Are you sure you want to delete %s\'s stored password?' % file))
+		print(colors.red('The only way you would retrieve this password is from the most recent backup [yn]'))
 		k = readchar.readchar()
 		if k.lower() != 'y':
 			print(colors.blue('Password not deleted'))
@@ -651,7 +664,7 @@ class userInterface():
 		# Gets export location
 		exportLocation = self.getExportLocation(bool(self.preferences.get('useDefaultLocation')))
 		# Exports as different file
-		currentFiles = self.cursor.execute('SELECT * FROM password').fetchall()
+		currentFiles = [(x[0], encsp(x[1], self.password), x[2]) for x in self.cursor.execute('SELECT * FROM password').fetchall()]
 		if os.path.isfile(os.path.join(exportLocation, self.userName + '.' + exportType)):
 			# Export already exists
 			print(colors.yellow('You already have an exported file in %s! Please try again!') % exportLocation)
@@ -673,10 +686,13 @@ class userInterface():
 				# Insert all entries into export database
 				if entries[0] != 0:
 					# Inserts values -- can be decryted
-					exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', entries) if bool(self.preferences.get('encryptExportDb')) else exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', (entries[0], entries[1], decrypt(enctries[2], self.password)))
+					if bool(self.preferences.get('encryptExportDb')): 
+						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', entries)
+					else: 
+						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', (entries[0], entries[1],dec(enctries[2], self.password)))
 				else:
 					# Inserts values -- hashed and cannot be decrypted
-					exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', entries)
+					exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)',(entries[0], encsp(entries[1], self.password), entries[2]))
 			exportFile.commit()
 			exportCursor.close()
 			# Saves File and closes file
@@ -691,11 +707,12 @@ class userInterface():
 					for entries in currentFiles:
 						if currentFiles[0] != entries:
 							# Write - can be decrypted
-							exportFile.write('{0:20}:{1}\n'.format(entries[1], entries[2] if bool(self.preferences.get('encryptExportDb')) else decrypt(entries[2], self.password))) 
+							decOrNo = entries[2] if bool(self.preferences.get('encryptExportDb')) else dec(entries[2], self.password)							
+							exportFile.write('{0:20}:{1}\n'.format(entries[1], decOrNo)) 
 						
 						else:
 							# Write -Hashed
-							exportFile.write('{0:20}:{1}\n'.format(entries[1], entries[2]))
+							exportFile.write('{0:20}:{1}\n'.format(encsp(entries[1], self.password), entries[2]))
 				
 				elif exportType == 'csv':
 					# Cursor seperated files
@@ -711,11 +728,12 @@ class userInterface():
 						# Items saved
 						if currentFiles[0] != entries:
 							# Write - can be decrypted
-							csvWriter.writerow([entries[1], entries[2] if bool(self.preferences.get('encryptExportDb')) else decrypt(entries[2], self.password)])
+							decOrNo = entries[2] if bool(self.preferences.get('encryptExportDb')) else dec(entries[2], self.password)
+							csvWriter.writerow([entries[1], decOrNo])
 
 						else:
 							# Write - hashed cannot be decrypted
-							csvWriter.writerow([entries[1], entries[2]])
+							csvWriter.writerow([encsp(entries[1]), entries[2]])
 
 				elif exportType == 'json':
 					# I first disliked this but its actually fine -- json files. 12/12/19
@@ -730,11 +748,12 @@ class userInterface():
 						# Enters into dictionary first
 						if currentFiles[0] != entries:
 							# updates dictionary -- can be decrypted
-							encList.update({entries[1]: entries[2] if bool(self.preferences.get('encryptExportDb')) else decrypt(entries[2], self.password)})
+							decOrNo = entries[2] if bool(self.preferences.get('encryptExportDb')) else dec(entries[2], self.password)
+							encList.update({entries[1]: decOrNo})
 
 						else:
 							# updates dictionary -- cannot be decrypted
-							encList.update({entries[1]: entries[2]})
+							encList.update({encsp(entries[1]): entries[2]})
 
 					# Put into file
 					json.dump(encList, exportFile)
@@ -779,7 +798,7 @@ class userInterface():
 		exportType = self.preferences.get('exportType')
 
 		# Current logs
-		cLogs = self.cursor.execute('SELECT * FROM log').fetchall()
+		cLogs = [(encsp(x[0], self.password), encsp(x[1], self.password)) for x in self.cursor.execute('SELECT * FROM log').fetchall()]
 
 		# Gets users export location
 		exportLocation = self.getExportLocation(bool(self.preferences.get('useDefaultLocation')))
@@ -871,7 +890,8 @@ class userInterface():
 		# print(latestBackupFile)
 		# change string into a datetime stamp
 		t = str(datetime.strptime(str(latestBackupFile), '%Y%j%H'))
-		print(colors.green('Your latest backup is on {day} {around} {time}'.format(day=colors.purple(t.split()[0]), around=colors.green('around'),time=colors.purple(t.split()[1][:5]))))
+		print(colors.green('Your latest backup is on {day} {around} {time}'.format(day=colors.purple(t.split()[0]),
+		 around=colors.green('around'),time=colors.purple(t.split()[1][:5]))))
 		# ask if the user actually wants to backup
 		print(colors.pink('Do you want to restore from the copy?[yn]\nThis will quit the program'))
 		yn = readchar.readchar()
@@ -905,6 +925,7 @@ class userInterface():
 				waitForInput(colors)
 
 		userpreferences = [row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()]
-		for i in userpreferences:
-			print(i)
+		print(colors.green('Here are your settings'))
 
+		for i in userpreferences:
+			None
