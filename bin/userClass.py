@@ -86,15 +86,15 @@ class userInterface():
 			[
 
 			# System preferences in UI
-			('verbose','verbose', 'bool', False, False, 'True,False'), 
-			('copyAfterGet','Copy after get', 'bool',True, True, 'True,False'),
+			('verbose','Stops the terminal from emptying line', 'bool', False, False, 'True,False'), 
+			('copyAfterGet','COpy password after "get" function', 'bool',True, True, 'True,False'),
 			('askToQuit','Ask before quit','bool',False, False, 'True,False'),
 			('customColor','Use custom color', 'bool',True, True, 'True,False'),
-			('logLogin','log login','bool',True,True, 'True,False'),
+			('logLogin','Logins will be recorded into','bool',True,True, 'True,False'),
 
 			# Exports preferences
-			('encryptExportDb','Exportdb as encrypted','bool',True, True, 'True,False'),
-			('useDefaultLocation','Use default location','bool',True, True, 'True,False'),
+			('encryptExportDb','Export files are encrypted','bool',True, True, 'True,False'),
+			('useDefaultLocation','Use default export location','bool',True, True, 'True,False'),
 			('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
 			('defaultExportLocation','Default export location', 'string',os.path.expanduser('~/Documents'), os.path.expanduser('~/Documents'), 'True,False'),
 
@@ -546,6 +546,11 @@ class userInterface():
 
 	def quit(self):
 		# Raises quit -->Goes to global scope before quits
+		if self.preferences.get('askToQuit'):
+			print(colors.red('Are you sure to quit?[yn]'))
+			q = readchar.readchar()
+			if q != 'y':
+				return None
 		raise normalQuit
 
 
@@ -887,4 +892,19 @@ class userInterface():
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
 
+
+	def changePreferences(self):
+		def trueorfalse(string):
+			if string.lower() in ['true','1','t']:
+				return True
+			elif string.lower() in ['false','0','f']:
+				return False
+			else:
+				print(colors.red(f'Sorry but {string} is not in our approved list of true/false strings'))
+				print(colors.cyan('True: [\'true\', \'1\',\'t\']\nFalse: [\'false\', \'0\', \'f\']'))
+				waitForInput(colors)
+
+		userpreferences = [row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()]
+		for i in userpreferences:
+			print(i)
 
