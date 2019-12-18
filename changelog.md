@@ -47,3 +47,12 @@ logs are includeed
 #### Encryption of keys
 password hashing now uses `sha512(password) + sha512(''.join(sorted(password, reversed=True)))`  
 longer password allows higher security  
+- - - -
+### 2019/12/17 16:30 ###
+#### New encryption method ####
+Today was a busy day (even though I have my finals right now)  
+Found a major flaw in 'enc.py' causing encryption problems, completely redesigned the encrypting alogrithm
+_Now supports any character!!_  
+#### More hashing ####
+Anything that includes the process of using your password now uses hashed password (of course)  
+No functionality addition  
