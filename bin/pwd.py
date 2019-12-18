@@ -80,15 +80,10 @@ def linktodb():
 	# Asks for password. Password will not be shown
 	passwd = input('Please enter your password:\n') 
 
-
-	# The password has to be checked before to prevent encryption error
-	try:
-		enc(passwd, passwd)
-	except EncryptionError:
-		print('This password is not avaliable! Please try agian!')
-		waitForInput(colors)
-		emptyline()
-		raise EncryptionError1
+	passwd = str(hashlib.pbkdf2_hmac('sha512', str(passwd).encode('utf-32'),
+	 ''.join(sorted(passwd)).encode('utf-32'),
+	  300000).hex()) + str(hashlib.pbkdf2_hmac('sha512',
+	   str(passwd).encode('utf-32'), ''.join(sorted(passwd, reverse=True)).encode('utf-32'), 300000).hex())
 
 	emptyline()
 
