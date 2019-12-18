@@ -1,8 +1,6 @@
 # Matthew Lam
 # module designed to import to [[encrypt]] and [[decrypt]]
 import random, hashlib
-class EncryptionError(Exception):
-	pass
 
 newd = {
 	' ' : 0,
@@ -102,8 +100,8 @@ newd = {
 	'©' : 94,
 	'†' : 95,
 	'π' : 96,
-	'œ' : 97,
-	'…' : 98,
+	'"' : 97,
+	'\'' : 98,
 	')' : 99,}
 
 newdec ={v: k for k, v in newd.items()}
@@ -206,7 +204,7 @@ encd = {
 	'©' : 94,
 	'†' : 95,
 	'π' : 96,
-	'œ' : 97,
+	'"' : 97,
 	'…' : 98,
 	')' : 99,
 	'∞' : 100,
@@ -272,7 +270,7 @@ def encsp(string, password):
 	25:4,
 	26:5,
 	27:6}
-	key = (len(str(password))*len(str(string)) % 28)
+	key = ((len(str(password))+len(str(string))) % 28)
 	spbin = ["{0:b}".format(int(encd.get(chars))).zfill(7) for chars in string]
 	ilist = []
 	for items in spbin:
@@ -283,77 +281,49 @@ def encsp(string, password):
 	return ''.join([decd.get(int(str(i), 2)) for i in ilist])
 
 def encrypt(encs, pwd):
-	encs = str(encs)
-	pwd = str(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd)).encode('utf-32'), 300000).hex()) + str(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex())
-	def strtoint(stringinput):
-		integers = ''
-		stringinput = str(stringinput)
-		try:
-			for chars in str(stringinput):
-				if chars not in encd:
-					raise EncryptionError
-				integers += str(encd.get(str(chars))).zfill(3)
-			if encd.get(stringinput[-1]) < 10:
-				integers = integers[:-2] + integers[-1:]
-			return integers
-		except EncryptionError:
-			print("\033[91m{}\033[00m" .format('EncryptionError:'), 'Character %s is not encryptable' % chars)
-			raise
-	def inttostr(intinput):
-		l = [str(intinput)[i:i+2] for i in range(0, len(str(intinput)), 2)]
-		c = ''
-		for chars in l:
-			# print(chars)
-			c += newdec.get(int(chars))
-		return c
-	encs = str(encs)
-	eintfinal = int(strtoint(str(encs))) * int(strtoint(str(pwd)))
-	lenth = str(len(strtoint(encs))).zfill(4)
-	estr = inttostr(eintfinal)
-	sped = encsp(estr, pwd)
-	final = sped + lenth + random.choice(list(encd.keys()))
-	return final
+	encs = ''.join(str(ord(chars)).zfill(6) for chars in str(encs))
+	print(encs)
+	front0s = [encs.index(i) for i in encs if i != '0'][0]
+	ending0s = len(encs) - len(encs.rstrip('0'))
+	npwd = ''.join(str(ord(l)) for l in str(hashlib.pbkdf2_hmac(
+		'sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex()))
+	intencd = str(int(encs) * int(npwd))
+	print('\n'+npwd)
+	cy = ''.join(random.choices([m for m in newdec.values()], k=4)) + str(front0s).zfill(2) + str(ending0s).zfill(2)
+	print('\n'+intencd)
+	for p in [int(intencd[i:i+2]) for i in range(0, len(intencd), 2)]:
+		cy += newdec.get(p)
+	return encsp(cy, pwd)
 
 def decrypt(decs, pwd):
-	def decstrtoint(stringinput):
-		integers = ''
-		stringinput = str(stringinput)
-		try:
-			for chars in str(stringinput):
-				if chars not in newd:
-					raise EncryptionError
-				integers += str(newd.get(chars)).zfill(2)
-			if encd.get(stringinput[-1]) < 10:
-				integers = integers[:-2] + integers[-1:]
-			return integers
-		except EncryptionError:
-			print("\033[91m{}\033[00m" .format('EncryptionError:'), 'Character %s is not encryptable' % chars)
-			quit()
-	def strtoint(stringinput):
-		stringinput = str(stringinput)
-		integers = ''
-		try:
-			for chars in stringinput:
-				if chars not in encd:
-					raise EncryptionError
-				integers += str(encd.get(chars)).zfill(3)
-			if encd.get(stringinput[-1]) < 10:
-				integers = integers[:-2] + integers[-1:]
-			return integers
-		except EncryptionError:
-			print("\033[91m{}\033[00m" .format('EncryptionError:'), 'Character %s is not encryptable' % chars)
-			quit()
-	def decinttostr(intinput):
-		l = [str(intinput)[i:i+3] for i in range(0, len(str(intinput)), 3)]
-		c = ''
-		for chars in l:
-			c += decd.get(int(chars))
-		return c
-	pwd = str(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd)).encode('utf-32'), 300000).hex()) + str(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex())
-	orglen = int(decs[-5: -1])
-	decs = decs[:-5]
-	dintfinal = encsp(decs, pwd)
-	df = int(decstrtoint(dintfinal))
-	dfinal = df // int(strtoint(pwd))
-	dfl = str(dfinal).zfill(int(orglen))
-	return decinttostr(dfl)
+	decs = encsp(decs, pwd)
+	zeros = decs[4:8]
+	product = ''.join([str(newd.get(i)).zfill(2) for i in decs[8:]])
+	npwd = ''.join(str(ord(l)) for l in str(hashlib.pbkdf2_hmac(
+		'sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex()))
+	print('\n\n\n\n\n\n'+product)
+	divided = str(int(product) // int(npwd))
+	print('\n'+npwd)
+	print('\n'+divided)
+	subzeroed = '0' * int(zeros[:2]) + divided + '0' * int(zeros[2:])
+	final = ''.join([chr(int(i)) for i in [subzeroed[p:p+6] for p in range(0,len(subzeroed), 6)]])
+	return final
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
