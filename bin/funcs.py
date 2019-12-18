@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, random, string
 try:
 	import readchar
 except ModuleNotFoundError: 
@@ -68,3 +68,7 @@ def waitForInput(colors):
 	print(colors.green('Press any key to continue...'))
 	readchar.readchar()
 	return ''
+
+def randomPwd():
+    password_characters = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(random.choice(password_characters) for i in range(15))
