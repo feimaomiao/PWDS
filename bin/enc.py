@@ -282,15 +282,12 @@ def encsp(string, password):
 
 def encrypt(encs, pwd):
 	encs = ''.join(str(ord(chars)).zfill(6) for chars in str(encs))
-	print(encs)
 	front0s = [encs.index(i) for i in encs if i != '0'][0]
 	ending0s = len(encs) - len(encs.rstrip('0'))
 	npwd = ''.join(str(ord(l)) for l in str(hashlib.pbkdf2_hmac(
 		'sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex()))
 	intencd = str(int(encs) * int(npwd))
-	print('\n'+npwd)
 	cy = ''.join(random.choices([m for m in newdec.values()], k=4)) + str(front0s).zfill(2) + str(ending0s).zfill(2)
-	print('\n'+intencd)
 	for p in [int(intencd[i:i+2]) for i in range(0, len(intencd), 2)]:
 		cy += newdec.get(p)
 	return encsp(cy, pwd)
@@ -301,10 +298,7 @@ def decrypt(decs, pwd):
 	product = ''.join([str(newd.get(i)).zfill(2) for i in decs[8:]])
 	npwd = ''.join(str(ord(l)) for l in str(hashlib.pbkdf2_hmac(
 		'sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex()))
-	print('\n\n\n\n\n\n'+product)
 	divided = str(int(product) // int(npwd))
-	print('\n'+npwd)
-	print('\n'+divided)
 	subzeroed = '0' * int(zeros[:2]) + divided + '0' * int(zeros[2:])
 	final = ''.join([chr(int(i)) for i in [subzeroed[p:p+6] for p in range(0,len(subzeroed), 6)]])
 	return final

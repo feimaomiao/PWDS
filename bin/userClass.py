@@ -1,4 +1,4 @@
-import sqlite3, os, enc, random, time, sys, hashlib, shutil, readchar, pyperclip
+import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip
 from datetime import datetime, timedelta
 from funcs import *
 from enc import encrypt as enc, decrypt as dec
@@ -213,7 +213,6 @@ class userInterface():
 			self.log('Requested for master password, Error raised.')
 			emptyline() if not self.verbose else None
 
-
 		else:	
 			# Else --> Get value from key
 			# Fetchone reduces an extra tuple and increases running time
@@ -306,9 +305,6 @@ class userInterface():
 			# Encrypts the password
 			encryptedPassword = enc(newPassword, self.password)
 
-			# Deletes password to prevent data breach
-			del(newPassword)
-
 			# Saves password into database with key and index
 			self.cursor.execute('''INSERT INTO password VALUES(?,?,?)''', (currentIndex, encsp(newInputKey, self.password), encryptedPassword))
 
@@ -316,24 +312,11 @@ class userInterface():
 			self.log('Inserted new password %s' % newInputKey)
 
 			# Deletes variables to prevent data breach
-			del(encryptedPassword, newInputKey)
+			del(encryptedPassword, newInputKey,newPassword)
 			print(colors.yellow('Success!'))
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
 
-		# EncryptionError is raised when the password inclueds some unencryptable characters
-		except EncryptionError:
-
-			# Deletes variable to prevent data breach
-			del(newPassword, encryptedPassword)
-
-			# Logs error value
-			self.log('Password with invalid character inputted')
-
-			print(colors.red('Please try again!'))
-			waitForInput(colors)
-			emptyline() if not self.verbose else None
-			self.new()
 
 		# Happens no matter what
 		finally:
