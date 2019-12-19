@@ -1,24 +1,8 @@
 # usr/bin/python3
-import sqlite3, os, enc, random, time, sys, hashlib, shutil
-from enc import encrypt as enc, decrypt as dec, newd, EncryptionError
+import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip
 from funcs import *
-from userClass import *
+from userClass import userInterface
 from datetime import datetime, timedelta
-try:
-	# Readchar and pyperclip are not inbuilt modules
-	import readchar, pyperclip
-except ModuleNotFoundError: 
-
-	import site
-	try:
-	    from pip import main as pipmain
-	except ImportError:
-	    from pip._internal import main as pipmain
-	pipmain(['install','readchar'])
-	pipmain(['install','pyperclip'])
-	reload(site)
-	# Imports module
-	import pyperclip, readchar
 
 global colors
 
@@ -55,7 +39,7 @@ def checkdir():
 		os.mkdir(os.path.expanduser('~/.password')) if not os.path.isdir(os.expanduser('~/.password')) else None
 		os.mkdir(os.path.expanduser('~/Library/.pbu'))
 
-	print(colors.blue('Initialising user workspace:'),colors.lightgrey(text))
+	print(colors.blue('Initialising user workspace:') ,colors.lightgrey(text))
 	time.sleep(random.random())
 	emptyline()
 

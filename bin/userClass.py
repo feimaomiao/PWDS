@@ -61,7 +61,8 @@ class userInterface():
 				print(colors.orange('%s has been used.' % i),colors.lightred('\nPlease use another one instead!'))
 				print(colors.lightblue('Your current list is %s' % str(usedlist)))
 				waitForInput(colors)
-				emptyline() if not self.verbose else None
+				# emptyline is default set to true
+				emptyline() 
 				# Recursive func if user repeatedly inputs used functions
 				return requestforinput(item, usedlist) 
 			# returns value if values have not been used before  
@@ -87,17 +88,17 @@ class userInterface():
 			[
 
 			# System preferences in UI
-			('verbose','Stops the terminal from emptying line', 'bool', False, False, 'True,False'), 
-			('copyAfterGet','COpy password after "get" function', 'bool',True, True, 'True,False'),
+			('verbose','Shows everything', 'bool', False, False, 'True,False'), 
+			('copyAfterGet','Copy password after output', 'bool',True, True, 'True,False'),
 			('askToQuit','Ask before quit','bool',False, False, 'True,False'),
 			('customColor','Use custom color', 'bool',True, True, 'True,False'),
-			('logLogin','Logins will be recorded into','bool',True,True, 'True,False'),
+			('logLogin','Record Logins','bool',True,True, 'True,False'),
 
 			# Exports preferences
 			('encryptExportDb','Export files are encrypted','bool',True, True, 'True,False'),
 			('useDefaultLocation','Use default export location','bool',True, True, 'True,False'),
 			('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
-			('defaultExportLocation','Default export location', 'string',os.path.expanduser('~/Documents'),
+			('defExpLoc','Default export location', 'string',os.path.expanduser('~/Documents'),
 			 os.path.expanduser('~/Documents'), 'True,False'),
 
 			# Backup preferences
@@ -110,7 +111,6 @@ class userInterface():
 			('hashUserFile', 'Hash User File Name', 'bool', False,False, 'True,False'),
 			('createRandomFile','Creates random nonsense files', 'bool',False, False, 'True,False')
 			])
-		self.log('Preferences set')
 
 		# Save master password
 		self.cursor.execute('''INSERT INTO password VALUES (0,'master',?)''', (
@@ -125,7 +125,6 @@ class userInterface():
 			# times
 			750000).hex(),))
 
-		self.log('Stored master password')
 
 		# different shortcuts avaliable
 		actions = ['get','new','changepassword','generate','quit','delete','changecommand','exportpwd','exportlog','import file','user preferences',
@@ -147,7 +146,6 @@ class userInterface():
 			emptyline() if not self.verbose else None
 
 		# Logs command input
-		self.log('User commands inputted')
 
 		# Saves file
 		self.file.commit()
@@ -156,28 +154,37 @@ class userInterface():
 		os.mkdir(os.path.join(os.path.expanduser('~/Library'),'.pbu','.'+ hashlib.pbkdf2_hmac('sha224', self.userName.encode('utf-32'),
 		 b'e302b662ae87d6facf8879dc1dabc573', 500000).hex()))
 
+		self.buildActionsPreferences()
+
+		self.log('Preferences set')
+		self.log('Stored master password')
+		self.log('User commands inputted')
+		self.log('Backup file built')
+
 	def login(self):
 		try:
 			self.buildActionsPreferences()
 			# Compares hashes
 			hexHash = hashlib.pbkdf2_hmac('sha512',self.password.encode('utf-32'),''.join(sorted(self.password)).encode('utf-32'),750000).hex()
 			if self.cursor.execute('''SELECT password FROM password WHERE id = 0''').fetchone()[0] == hexHash :
+				print(colors.darkgrey('Login success!')) if self.verbose else None
 				self.log('Logged in') if bool(int(self.preferences.get('logLogin'))) else None
 			else:
 			 	self.log('Failed attempt') if bool(int(self.preferences.get('logLogin'))) else None
 			 	raise WrongPassWordError
+				print(colors.darkgrey('Wrong password. Raise WrongPasswordError')) if self.verbose else None
 
 		# WrongPasswordError is raised if user entered a wrong password 
 		except WrongPassWordError:
+			print(colors.darkgrey('Module level error raised. Raise error in __main__')) if self.verbose else None
 			raise
 
 	def log(self, action):
-
+		print(colors.darkgrey(f'Logging {action} into log file')) if self.verbose else None
 		# Logs exact time and Action
 		self.cursor.execute('''INSERT INTO log VALUES(?,?)''',
 			(encsp(str(datetime.now().strftime("%Y-%m-%d %H:%M:%S:{}".format(str(datetime.now().microsecond)[:-3]))),
 			 self.password),encsp(action, self.password)))
-
 		# saves file 
 		self.file.commit()
 
@@ -190,7 +197,7 @@ class userInterface():
 		# Get all values -> Select * From Password
 		if getValue == '*':
 			self.log('Requested for all key, output printed')
-			print('The list of your keys are:')
+			print(colors.orange('The list of your keys are:'))
 
 			# only print the key (search query) of all. Prevents data beach
 			for k in [encsp(i[1], self.password) for i in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]:
@@ -559,7 +566,6 @@ class userInterface():
 				return None
 		raise normalQuit
 
-
 	def delete(self):
 		# Get current passwords
 		currentPwds = [(x[0], encsp(x[1],self.password), x[2]) for x in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]
@@ -640,9 +646,8 @@ class userInterface():
 		self.file.commit()
 		return None
 
-
-	# Prints user help, lists all actions
 	def help(self):
+		# Prints user help, lists all actions
 
 		for userActions in self.actions.items():
 
@@ -762,11 +767,11 @@ class userInterface():
 
 		emptyline() if not self.verbose else None
 
-	# Gets user Export Location //From preferences
 	def getExportLocation(self, useDefaultLocation):
+		# Gets user Export Location //From preferences
 		exportLocation = ''
 		if useDefaultLocation:
-			exportLocation = self.preferences.get('defaultExportLocation')
+			exportLocation = self.preferences.get('defExpLoc')
 		else:
 			exportLocation = input(colors.red('Please enter your desired export location in command prompt syntax\n(e.g.: "~/Documents")\n>>>'))
 		# Expands location if user uses command line prompt syntax
@@ -790,6 +795,7 @@ class userInterface():
 			return exportLocation
 
 	def exportLog(self):
+		# Exports user log
 		exportType = self.preferences.get('exportType')
 
 		# Current logs
@@ -907,7 +913,6 @@ class userInterface():
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
 
-
 	def changePreferences(self):
 		def trueorfalse(string):
 			if string.lower() in ['true','1','t']:
@@ -922,5 +927,5 @@ class userInterface():
 		userpreferences = [row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()]
 		print(colors.green('Here are your settings'))
 
-		for i in userpreferences:
-			None
+		for prefs in userpreferences:
+			print('{0:20} || {1:30} || ')
