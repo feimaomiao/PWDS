@@ -56,3 +56,12 @@ _Now supports any character!!_
 #### More hashing ####
 Anything that includes the process of using your password now uses hashed password (of course)  
 No functionality addition  
+### 2019/12/20 12:07 ###
+It's been a few days since I last commited cus I have my finals  
+just finished my finals so the update should be faster and its holiday I mean...  
+#### Modified user preference function ####
+Still working on it. String formatting is kind of killing me but I should be able to figure it out soon
+Output looks fine
+The past few days I changed the 'colors' returning method, making it a bit faster I believe  
+#### Fixed encryption method! ####
+I also fixed the 'last character problem' in enc.py, eliminating possible errors.
