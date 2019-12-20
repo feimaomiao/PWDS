@@ -1,7 +1,7 @@
 import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip
 from datetime import datetime, timedelta
 from funcs import *
-from enc import encrypt as enc, decrypt as dec
+from enc import encrypt as enc, decrypt as dec, encsp
 
 # user class. All actions are done under a class structure.
 class userInterface():
@@ -99,12 +99,12 @@ class userInterface():
 			('useDefaultLocation','Use default export location','bool',True, True, 'True,False'),
 			('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
 			('defExpLoc','Default export location', 'string',os.path.expanduser('~/Documents'),
-			 os.path.expanduser('~/Documents'), 'True,False'),
+			 os.path.expanduser('~/Documents'), 'Any folder'),
 
 			# Backup preferences
 			('createBackupFile','backup','bool',True, True, 'True,False'),
 			('backupFileTime','Backup Passwords time','string','d','d','h,d,w,2w,m,2m,6m,y,off'),
-			('backupLocation','The location of back-up','string',os.path.expanduser('~/Library/.pbu'), os.path.expanduser('~/Library/.pbu'), ''),
+			('backupLocation','The location of back-up','string',os.path.expanduser('~/Library/.pbu'), os.path.expanduser('~/Library/.pbu'), 'Any folder'),
 			('hashBackupFile','Hashing the Backup File', 'bool', True,True, 'True,False'),
 
 			# Extrasecure 
@@ -170,8 +170,8 @@ class userInterface():
 				print(colors.darkgrey('Login success!')) if self.verbose else None
 				self.log('Logged in') if bool(int(self.preferences.get('logLogin'))) else None
 			else:
-			 	self.log('Failed attempt') if bool(int(self.preferences.get('logLogin'))) else None
-			 	raise WrongPassWordError
+				self.log('Failed attempt') if bool(int(self.preferences.get('logLogin'))) else None
+				raise WrongPassWordError
 				print(colors.darkgrey('Wrong password. Raise WrongPasswordError')) if self.verbose else None
 
 		# WrongPasswordError is raised if user entered a wrong password 
@@ -199,6 +199,7 @@ class userInterface():
 			self.log('Requested for all key, output printed')
 			print(colors.orange('The list of your keys are:'))
 
+			print(colors.darkgrey('Getting key from '))
 			# only print the key (search query) of all. Prevents data beach
 			for k in [encsp(i[1], self.password) for i in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]:
 				print(colors.orange(k))
@@ -348,9 +349,9 @@ class userInterface():
 		emptyline() if not self.verbose else None
 
 		oldPassword = str(hashlib.pbkdf2_hmac('sha512', str(oldPassword).encode('utf-32'),
-	 ''.join(sorted(oldPassword)).encode('utf-32'),
-	  300000).hex()) + str(hashlib.pbkdf2_hmac('sha512',
-	   str(oldPassword).encode('utf-32'), ''.join(sorted(oldPassword, reverse=True)).encode('utf-32'), 300000).hex())
+		''.join(sorted(oldPassword)).encode('utf-32'),
+		300000).hex()) + str(hashlib.pbkdf2_hmac('sha512',
+		str(oldPassword).encode('utf-32'), ''.join(sorted(oldPassword, reverse=True)).encode('utf-32'), 300000).hex())
 
 		# Checks if password hash matches saved hash
 
@@ -373,11 +374,11 @@ class userInterface():
 
 		# Inserts new passwords into database 
 		newEncPassword = str(hashlib.pbkdf2_hmac('sha512', str(newEncPassword).encode('utf-32'),
-	 ''.join(sorted(newEncPassword)).encode('utf-32'),
-	  300000).hex()) + str(hashlib.pbkdf2_hmac('sha512',
-	   str(newEncPassword).encode('utf-32'), ''.join(sorted(newEncPassword, reverse=True)).encode('utf-32'), 300000).hex())
+		''.join(sorted(newEncPassword)).encode('utf-32'),
+		300000).hex()) + str(hashlib.pbkdf2_hmac('sha512',
+		str(newEncPassword).encode('utf-32'), ''.join(sorted(newEncPassword, reverse=True)).encode('utf-32'), 300000).hex())
 
-	  	# Hashing new password
+		# Hashing new password
 		newPwds = [(0, 'master',
 		hashlib.pbkdf2_hmac('sha512',newEncPassword.encode('utf-32'),''.join(sorted(newEncPassword)).encode('utf-32'), 750000).hex())
 		]
@@ -926,6 +927,43 @@ class userInterface():
 
 		userpreferences = [row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()]
 		print(colors.green('Here are your settings'))
+		print('{des:35}||{valueType:11}||{val:35}||{aval:30}'.format(des='description',valueType='value type',val='value',aval='avaliable'))
+
 
 		for prefs in userpreferences:
-			print('{0:20} || {1:30} || ')
+			description = str(colors.cyan(prefs[1]))
+			valueType = str(colors.blue(prefs[2]))
+			value = str(colors.lightgreen(prefs[3]))
+			avaliable = str(colors.yellow(prefs[5]))
+			print(f'{description:38}||{valueType:22}||{value:45}||{avaliable:40}')
+		waitForInput(colors)
+
+# self.cursor.executemany(
+# '''INSERT INTO userPreferences VALUES(?,?,?,?,?,?)''', 
+# # list of preferences avaliable
+# [
+
+# # System preferences in UI
+# ('verbose','Shows everything', 'bool', False, False, 'True,False'), 
+# ('copyAfterGet','Copy password after output', 'bool',True, True, 'True,False'),
+# ('askToQuit','Ask before quit','bool',False, False, 'True,False'),
+# ('customColor','Use custom color', 'bool',True, True, 'True,False'),
+# ('logLogin','Record Logins','bool',True,True, 'True,False'),
+
+# # Exports preferences
+# ('encryptExportDb','Export files are encrypted','bool',True, True, 'True,False'),
+# ('useDefaultLocation','Use default export location','bool',True, True, 'True,False'),
+# ('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
+# ('defExpLoc','Default export location', 'string',os.path.expanduser('~/Documents'),
+#  os.path.expanduser('~/Documents'), 'True,False'),
+
+# # Backup preferences
+# ('createBackupFile','backup','bool',True, True, 'True,False'),
+# ('backupFileTime','Backup Passwords time','string','d','d','h,d,w,2w,m,2m,6m,y,off'),
+# ('backupLocation','The location of back-up','string',os.path.expanduser('~/Library/.pbu'), os.path.expanduser('~/Library/.pbu'), ''),
+# ('hashBackupFile','Hashing the Backup File', 'bool', True,True, 'True,False'),
+
+# # Extrasecure 
+# ('hashUserFile', 'Hash User File Name', 'bool', False,False, 'True,False'),
+# ('createRandomFile','Creates random nonsense files', 'bool',False, False, 'True,False')
+# ])
