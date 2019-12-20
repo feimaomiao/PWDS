@@ -916,26 +916,36 @@ class userInterface():
 
 	def changePreferences(self):
 		def trueorfalse(string):
+			# defines user input to be true or false (used in changing preferences)
 			if string.lower() in ['true','1','t']:
+				# avaliable 'true' formats
 				return True
 			elif string.lower() in ['false','0','f']:
+				# avaliable 'flse formats'
 				return False
 			else:
+				# Neither
 				print(colors.red(f'Sorry but {string} is not in our approved list of true/false strings'))
 				print(colors.cyan('True: [\'true\', \'1\',\'t\']\nFalse: [\'false\', \'0\', \'f\']'))
 				waitForInput(colors)
 
 		userpreferences = [row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()]
+		# get current preferences
 		print(colors.green('Here are your settings'))
 		print('{des:35}||{valueType:11}||{val:35}||{aval:30}'.format(des='description',valueType='value type',val='value',aval='avaliable'))
+		# formats output window
 
 
 		for prefs in userpreferences:
 			description = str(colors.cyan(prefs[1]))
+			# preference description
 			valueType = str(colors.blue(prefs[2]))
+			# prefernces value type
 			value = str(colors.lightgreen(prefs[3]))
+			# preferecne current value
 			avaliable = str(colors.yellow(prefs[5]))
-			print(f'{description:38}||{valueType:22}||{value:45}||{avaliable:40}')
+			# possible values
+			print(f'{description:38}||{valueType:22}||{value:4}||{avaliable:40}')
 		waitForInput(colors)
 
 # self.cursor.executemany(
