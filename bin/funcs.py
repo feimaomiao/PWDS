@@ -20,39 +20,39 @@ def buildColors(trueOrFalse):
 
 	# colors filled with actual colors
 	class colorsClassTrue: 
-		def black(c): 		return'\033[30m{}\033[0m'.format(c)  
-		def blue(c): 		return'\033[34m{}\033[0m'.format(c)
-		def cyan(c): 		return'\033[36m{}\033[0m'.format(c)
-		def darkgrey(c): 	return'\033[90m{}\033[0m'.format(c)
-		def green(c):		return'\033[32m{}\033[0m'.format(c)
-		def lightblue(c):	return'\033[94m{}\033[0m'.format(c)
-		def lightcyan(c): 	return'\033[96m{}\033[0m'.format(c)
-		def lightgreen(c): 	return'\033[92m{}\033[0m'.format(c)
-		def lightgrey(c): 	return'\033[37m{}\033[0m'.format(c)
-		def lightred(c):	return'\033[91m{}\033[0m'.format(c)
-		def pink(c):		return'\033[95m{}\033[0m'.format(c)
-		def purple(c): 		return'\033[35m{}\033[0m'.format(c)
-		def red(c): 		return'\033[31m{}\033[0m'.format(c) 
-		def orange(c): 		return'\033[33m{}\033[0m'.format(c)
-		def yellow(c):		return'\033[93m{}\033[0m'.format(c)
+		def black(c): 		return str('\033[30m{}\033[0m'.format(c))
+		def blue(c): 		return str('\033[34m{}\033[0m'.format(c))
+		def cyan(c): 		return str('\033[36m{}\033[0m'.format(c))
+		def darkgrey(c): 	return str('\033[90m{}\033[0m'.format(c))
+		def green(c):		return str('\033[32m{}\033[0m'.format(c))
+		def lightblue(c):	return str('\033[94m{}\033[0m'.format(c))
+		def lightcyan(c): 	return str('\033[96m{}\033[0m'.format(c))
+		def lightgreen(c): 	return str('\033[92m{}\033[0m'.format(c))
+		def lightgrey(c): 	return str('\033[37m{}\033[0m'.format(c))
+		def lightred(c):	return str('\033[91m{}\033[0m'.format(c))
+		def pink(c):		return str('\033[95m{}\033[0m'.format(c))
+		def purple(c): 		return str('\033[35m{}\033[0m'.format(c))
+		def red(c): 		return str('\033[31m{}\033[0m'.format(c))
+		def orange(c): 		return str('\033[33m{}\033[0m'.format(c))
+		def yellow(c):		return str('\033[93m{}\033[0m'.format(c))
 
 	# transparent
 	class colorsclassFalse:
-		def black(c): 		return '{}\033[0m'.format(c)
-		def blue(c): 		return '{}\033[0m'.format(c)
-		def cyan(c): 		return '{}\033[0m'.format(c)
-		def darkgrey(c): 	return '{}\033[0m'.format(c)
-		def green(c): 		return '{}\033[0m'.format(c)
-		def lightblue(c): 	return '{}\033[0m'.format(c)
-		def lightcyan(c): 	return '{}\033[0m'.format(c)
-		def lightgreen(c): 	return '{}\033[0m'.format(c)
-		def lightgrey(c): 	return '{}\033[0m'.format(c)
-		def lightred(c): 	return '{}\033[0m'.format(c)
-		def pink(c):		return '{}\033[0m'.format(c)
-		def purple(c): 		return '{}\033[0m'.format(c)
-		def red(c): 		return '{}\033[0m'.format(c)
-		def orange(c): 		return '{}\033[0m'.format(c)
-		def yellow(c): 		return '{}\033[0m'.format(c)
+		def black(c): 		return c
+		def blue(c): 		return c
+		def cyan(c): 		return c
+		def darkgrey(c): 	return c
+		def green(c): 		return c
+		def lightblue(c): 	return c
+		def lightcyan(c): 	return c
+		def lightgreen(c): 	return c
+		def lightgrey(c): 	return c
+		def lightred(c): 	return c
+		def pink(c):		return c
+		def purple(c): 		return c
+		def red(c): 		return c
+		def orange(c): 		return c
+		def yellow(c): 		return c
 
 	# Assigns class call to variable
 	return colorsClassTrue if trueOrFalse else colorsclassFalse
