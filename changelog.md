@@ -65,3 +65,8 @@ Output looks fine
 The past few days I changed the 'colors' returning method, making it a bit faster I believe  
 #### Fixed encryption method! ####
 I also fixed the 'last character problem' in enc.py, eliminating possible errors.
+### 2019/12/24 00:10 ###
+Whoa it's been a few days since my last push.  
+Spent my weekend going around killing time...did't work a whole lot on it lol  
+Added many many more functionality to option `verbose` 
+New file alterPrefs. Used to change preferences `still in development`  
