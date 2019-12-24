@@ -1,4 +1,4 @@
-import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip
+import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip, alterPrefs
 from datetime import datetime, timedelta
 from funcs import *
 from enc import encrypt as enc, decrypt as dec, encsp
@@ -27,6 +27,8 @@ class userInterface():
 		# Get username
 		self.userName = filename
 
+	def __repr__(self):
+		return str(self.userName)
 
 	# builds the user actions and preferences
 	def buildActionsPreferences(self):
@@ -43,10 +45,16 @@ class userInterface():
 		# Assign to verbose
 		self.verbose = self.preferences.get('verbose')
 
+
 		# Set colors after building user prefernces
 		global colors
 		colors = buildColors(self.preferences.get('customColor'))
+		print(colors.darkgrey('building colors')) if self.verbose else None
+		print(colors.darkgrey('getting preferences was successful')) if self.verbose else None
 		self.file.commit()
+		print(colors.darkgrey('Saving file and commiting user interface'))
+
+		return None
 
 	def initialiseNewUser(self):
 		global colors
@@ -193,10 +201,12 @@ class userInterface():
 		# Ask for user input
 		getValue = input(colors.lightblue('Please enter what do you want to get\n'))
 		emptyline() if not self.verbose else None
+		print(colors.darkgrey('Loading from database and looking for entries with Key %s' % getValue)) if self.verbose else None
 
 		# Get all values -> Select * From Password
 		if getValue == '*':
 			self.log('Requested for all key, output printed')
+			print(colors.darkgrey('Generating key sequences from database')) if self.verbose else None
 			print(colors.orange('The list of your keys are:'))
 
 			print(colors.darkgrey('Getting key from '))
@@ -209,11 +219,12 @@ class userInterface():
 
 			# save file
 			self.file.commit()
+			print(colors.darkgrey('All values outputted. Calling recursive function.')) if self.verbose else None
 			return self.get()
 
 		if getValue == 'master':
-
 			# user tries to get login password, returns fail 
+			print(colors.darkgrey('User requesting for master key\ndDecrypt error raised\nReturns back to get branch\nRe-raising  to user level')) if self.verbose else None
 			print(colors.red('Warning:'),colors.lightred('"Master"'),colors.blue('password is hashed and cannot be retrieved. Sorry!'))
 			waitForInput(colors)
 
@@ -228,7 +239,7 @@ class userInterface():
 			getResult = self.cursor.execute('SELECT * FROM password WHERE key =(?)', (encsp(getValue, self.password),)).fetchone()
 			# If key exists -->
 			if getResult is not None:
-
+				print(colors.darkgrey('Value has been retrieved from database\nDecrytping password')) if self.verbose else None
 				# Logs user have requeted for a valid result
 				self.log('Searched for %s, valid output printed' % getValue)
 
@@ -241,19 +252,23 @@ class userInterface():
 
 				# Copies outputted password
 				if copy:
+					print('Copying password to clipboard') if self.verbose else None
 
 					# Pyperclip syntax to copy password
 					pyperclip.copy(dec(getResult[2], self.password))
 
 					# Tell the user password has been copied
 					print(colors.lightgrey('Your password has been copied!'))
+
+					self.log('Copied password')
+
 				waitForInput(colors)
-				if not self.verbose:
-					# Empty line to prevent data from keeping in Terminal Window. Prevents data breach
-					emptyline() if copy else emptyline()
+
+				emptyline() if not self.verbose else None
 
 			# Search query not valid
 			else:
+				print(colors.darkgrey('Database cannot find key matching value %s' % getValue)) if self.verbose else None
 				print(colors.lightred('This is not a valid value in your table! Please choose again!'))
 
 				# logs invalid
@@ -262,42 +277,49 @@ class userInterface():
 				emptyline() if not self.verbose else None
 				# Saves file as we are not gonna hit :saveFile line
 				self.file.commit()
-
-				# Goes back to beginning of :get
+				print('Returning to beginning of function $get') if self.verbose else None
+				# Goes back to beginning of get()
 				self.get()
+
 
 		# Saves log
 		self.file.commit()
+		return None
 
 	def new(self):
-		print(self.actions)
 		# Inserts new key into database
+		print(colors.darkgrey('Grabbing current keys from database')) if self.verbose else None
 		currentKeys = [encsp(x[1], self.password) for x in self.cursor.execute('SELECT * FROM password').fetchall()]
 		# Asks for key value
 		newInputKey = input(colors.cyan('Please enter what do you want to enter:\n'))
+		print(colors.darkgrey('Looking through current keys'))
 
 		if newInputKey in currentKeys:
+			print('%s is found in current Keys') if self.verbose else None
+			# New key is already used
 			self.log('Used value is re-inputted[new], no value is updated')
 			print(colors.red('{} has been used! Please use a distinct key instead!'.format(newInputKey)))
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
+			print(colors.darkgrey('Going back to $new function')) if self.verbose else None
 			return self.new()
 
 		generateKeyword = list(self.actions.keys())[list(self.actions.values()).index('generate')]
+		print('Getting generate keyword from preference database') if self.verbose else None
 
 		# Asks for new password
 
 		print(colors.red('Please enter the new password:'),colors.green('\nYou can enter your generate keyword'),
 		 colors.yellow(generateKeyword), colors.green('to generate one.'))
-		# Does not show
 		newPassword = input()
 
 
 		if newPassword == generateKeyword:
+			print(colors.darkgrey('Generating key\nCalling $random')) if self.verbose else None
 			print('Generate')
 			# generates password
 			newPassword = randomPwd()
-
+			print(colors.darkgrey('Random password is generated\ncopying new password to clipboard')) if self.verbose else None
 			# Copies password
 			pyperclip.copy(newPassword)
 			self.log('A new password is generated')
@@ -305,56 +327,54 @@ class userInterface():
 
 		emptyline() if not self.verbose else None
 
+		print(colors.darkgrey('Generating index for this password')) if self.verbose else None
 		# Gets current max index-> figures out the index value of this password
 		currentIndex = max(int(x[0]) for x in self.cursor.execute('''SELECT * FROM password''').fetchall()) + 1
 
-		# Error could be raised
-		try:
-			# Encrypts the password
-			encryptedPassword = enc(newPassword, self.password)
+		print(colors.darkgrey('Encrypting password...')) if self.verbose else None
+		# Encrypts the password
+		encryptedPassword = enc(newPassword, self.password)
 
-			# Saves password into database with key and index
-			self.cursor.execute('''INSERT INTO password VALUES(?,?,?)''', (currentIndex, encsp(newInputKey, self.password), encryptedPassword))
+		print(colors.darkgrey('Inserting password into database')) if self.verbose else None
+		# Saves password into database with key and index
+		self.cursor.execute('''INSERT INTO password VALUES(?,?,?)''', (currentIndex, encsp(newInputKey, self.password), encryptedPassword))
 
-			# Logs the saved password
-			self.log('Inserted new password %s' % newInputKey)
+		# Logs the saved password
+		self.log('Inserted new password %s' % newInputKey)
 
-			# Deletes variables to prevent data breach
-			del(encryptedPassword, newInputKey,newPassword)
-			print(colors.yellow('Success!'))
-			waitForInput(colors)
-			emptyline() if not self.verbose else None
+		print(colors.darkgrey('Deleting unencrypted password string')) if self.verbose else None
+		# Deletes variables to prevent data breach
+		del(encryptedPassword, newInputKey,newPassword)
+		print(colors.yellow('Success!'))
+		waitForInput(colors)
+		emptyline() if not self.verbose else None
 
-
-		# Happens no matter what
-		finally:
-
-			# Saves file--> Log and password
-			self.file.commit()
-			return None
+		print('Saving file') if self.verbose else None
+		# Saves file--> Log and password
+		self.file.commit()
+		return None
 
 	def changePassword(self):
 
 		# Requests for password--> Requests for authenication
 		oldPassword = input(colors.yellow('Please enter your old password\n'))
-		emptyline() if not self.verbose else None
 
 		# Requests for new password --> Used to encrypt user data
 		newEncPassword = input(colors.red('Please enter your new password\n'))
 		emptyline() if not self.verbose else None
 
+		print(colors.darkgrey('Getting hashed password from database')) if self.verbose else None
 		# select all password db in current password database
 		curPwds = [x for x in self.cursor.execute('SELECT * FROM password').fetchall() if x[0] != 0]
 
-		emptyline() if not self.verbose else None
-
+		print(colors.darkgrey('Hashing old user password')) if self.verbose else None
 		oldPassword = str(hashlib.pbkdf2_hmac('sha512', str(oldPassword).encode('utf-32'),
 		''.join(sorted(oldPassword)).encode('utf-32'),
 		300000).hex()) + str(hashlib.pbkdf2_hmac('sha512',
 		str(oldPassword).encode('utf-32'), ''.join(sorted(oldPassword, reverse=True)).encode('utf-32'), 300000).hex())
 
 		# Checks if password hash matches saved hash
-
+		print(colors.darkgrey('Checking hashsum')) if self.verbose else None
 		if not hashlib.pbkdf2_hmac(
 			# security level sha-512
 			'sha512',
@@ -365,67 +385,83 @@ class userInterface():
 			# times
 			750000).hex() == self.cursor.execute(
 			'SELECT password FROM password WHERE id = 0').fetchone()[0]:
+			print(colors.darkgrey('Checksums don\'t match')) if self.verbose else None
 			print(colors.red('WrongPasswordError:'), colors.green('You entered the wrong password! Please try again!'))
 			waitForInput(colors)
+			print(colors.darkgrey('Quitting $changepassword function')) if self.verbose else None
 			return None
 
+		print(colors.darkgrey('Hashsums match\nRemoving old passwords')) if self.verbose else None
 		# deletes all from database 
 		self.cursor.execute('DELETE FROM password')
 
+		print(colors.darkgrey('Hashing new password')) if self.verbose else None
 		# Inserts new passwords into database 
 		newEncPassword = str(hashlib.pbkdf2_hmac('sha512', str(newEncPassword).encode('utf-32'),
 		''.join(sorted(newEncPassword)).encode('utf-32'),
 		300000).hex()) + str(hashlib.pbkdf2_hmac('sha512',
 		str(newEncPassword).encode('utf-32'), ''.join(sorted(newEncPassword, reverse=True)).encode('utf-32'), 300000).hex())
 
+		print(colors.darkgrey('Generating new passwords')) if self.verbose else None
 		# Hashing new password
 		newPwds = [(0, 'master',
 		hashlib.pbkdf2_hmac('sha512',newEncPassword.encode('utf-32'),''.join(sorted(newEncPassword)).encode('utf-32'), 750000).hex())
 		]
-		for currentPwds in curPwds:
+		print(colors.darkgrey('Encrypting new passwords')) if self.verbose else None
+		totalPasswords = len(curPwds)
+		for count, currentPwds in enumerate(curPwds):
+			print(colors.darkgrey('Encryting new password %s in %s' %(str(count), str(totalPasswords)))) if self.verbose else None
 			newPwds.append((currentPwds[0], encsp(encsp(currentPwds[1],self.password),newEncPassword), enc(dec(currentPwds[2], self.password), newEncPassword)))
+		print(colors.darkgrey('Inserting new passwords into database')) if self.verbose else None
 		self.cursor.executemany('INSERT INTO password VALUES(?,?,?)', newPwds)
 
+		print(colors.darkgrey('Updating new password')) if self.verbose else None
 		# Sets user password to the new password
 		self.password = newEncPassword
 
 		newlogs = []
+		print(colors.darkgrey('Collecting current logs')) if self.verbose else None
 		for items in [(encsp(x[0], oldPassword), encsp(x[1], oldPassword)) for x in self.cursor.execute('SELECT * FROM log').fetchall()]:
-			# items[0] = encsp(items[0], oldPassword)
-			# items[1] = encsp(items[1], oldPassword)
 			newlogs.append((encsp(items[0], newEncPassword), encsp(items[1], newEncPassword)))
+		print(colors.darkgrey('Deleting old logs from database\nUpdating new logs')) if self.verbose else None
 		self.cursor.execute('''DELETE FROM log''')
 		self.cursor.executemany('''INSERT INTO log VALUES (?,?)''',newlogs)
 
 		userCommands = []
+		print(columns.darkgrey('Collecting current user commands')) if self.verbose else None
 		for items in [(x[0], encsp(x[1], oldPassword)) for x in self.cursor.execute('''SELECT * FROM commands''').fetchall()]:
-			print(items)
 			userCommands.append((items[0], encsp(items[1], newEncPassword)))
+		print(colors.darkgrey('Deleting user commands from database\nUpdating user commands')) if self.verbose else None
+		# Deletes commands from databases and inputs newly encrypted user commands
 		self.cursor.execute('''DELETE FROM commands''')
 		self.cursor.executemany('''INSERT INTO commands VALUES (?,?)''', userCommands)
-		time.sleep(10)
 		return None
 
 	def backup(self):
 
 		# Save after log 
 		self.log('CreatedBackup')
+		print(colors.darkgrey('Backup created\nFile saved')) if self.verbose else None
 		self.file.commit()
 
 		print(colors.green('Backing up....'))
 
+		print(colors.darkgrey('Getting current time success')) if self.verbose else None
 		# Generates backup db name
 		now = time.time()
 		fileTime = str(time.localtime(now).tm_year).zfill(4) + str(time.localtime(now).tm_yday).zfill(3) + str(time.localtime(now).tm_hour).zfill(2)
 
+		print(colors.darkgrey('Generating backup file name')) if self.verbose else None
 		# Determines the backup db name by preferences
 		backupName = hashlib.pbkdf2_hmac('sha224', 
 						self.userName.encode('utf-32'), b'e302b662ae87d6facf8879dc1dabc573', 
 						500000).hex() if self.preferences.get('hashBackupFile') else self.userName
 
+		print(colors.darkgrey('Creating backup file')) if self.verbose else None
 		# joins path to determine file location
 		backupFile = os.path.join(self.preferences.get('backupLocation'),'.' + backupName,'.' +fileTime+'.db')
 
+		print(colors.darkgrey('Copying file to backup folder')) if self.verbose else None
 		# shutil.copy is willing to replace
 		# Copies file to backup file
 		shutil.copy2(
@@ -440,14 +476,13 @@ class userInterface():
 
 	def checkBackup(self):
 		print(colors.blue('Checking auto backup'))
-
 		# logs checking backup
 		self.log('Checking Backup')
-		now = time.time()
 
 		# time format relates to numbers
 		timeD = {'h': 1,'d': 100,'w': 700,'2w': 1400,'m': 3000,'2m': 6000,'6m': 18000,'y' : 100000}
 
+		print(colors.darkgrey('Connecting to user backup folder')) if self.verbose else None
 		# gets the user backup file name
 		backupName = hashlib.pbkdf2_hmac('sha224', 
 						self.userName.encode('utf-32'), 
@@ -456,25 +491,30 @@ class userInterface():
 
 		# get the time of the latest backup
 		try:
+			print(colors.darkgrey('Getting user backup histories')) if self.verbose else None
 			latestBackup = max([int(fName[1:-3]) for fName in [files for r, d,files in os.walk(os.path.join(self.preferences.get('backupLocation'),
 				'.'+ backupName))][0]])
 		except ValueError:
+			print(colors.darkgrey('No backup can be retrieved'))  if self.verbose else None
 			self.backup() if user.preferences.get('createBackupFile') else None
 			return None
 
 		# Gets current time
+		print(colors.darkgrey('Getting current time\nGenerating backup name')) if self.verbose else None
+		now = time.time()
 		currentTime = int(str(time.localtime(now).tm_year).zfill(4) +
 		 str(time.localtime(now).tm_yday).zfill(3) + str(time.localtime(now).tm_hour).zfill(2))
 
 		# Backs up if the difference is bigger than the time user needs to auto-backup
+		print(colors.darkgrey('Comparing backup dates')) if self.verbose else None
 		if ((currentTime - latestBackup) >= timeD.get(self.preferences.get('backupFileTime'))):
 			print(colors.cyan('Backup needed'))
 			self.backup()
 			print(colors.lightgreen('Backup finished'))
 		else:
-			self.log('No auto backup needed') 
 			print(colors.cyan('No backup needed'))
-
+			self.log('No auto backup needed') 
+		print(colors.darkgrey('Backup checking finished')) if self.verbose else None
 		print(colors.lightblue('Auto-backup check finished'))
 		time.sleep(random.random())
 		self.log('Auto backup check finished')
@@ -485,6 +525,7 @@ class userInterface():
 			# Does not allow duplicates
 			i = input(colors.lightcyan('Please enter the command you want for the action %s\n' % colors.green(item)))
 
+			print(colors.darkgrey('Checking if inpputted item has been used in current commands')) if self.verbose else None
 			# return values if sequences has been entered before 
 			if i in usedlist:
 
@@ -495,8 +536,10 @@ class userInterface():
 				# Recursive func if user repeatedly inputs used functions
 				return requestforinput(item, usedlist) 
 			# returns value if values have not been used before  
+			print(colors.darkgrey('Command is not used. Usage accepted')) if self.verbose else None
 			return i
 
+		print(colors.darkgrey('Generating user possible actions')) if self.verbose else None
 		# List of user actions possible
 		userActions = [
 
@@ -541,35 +584,44 @@ class userInterface():
 
 		] 
 
-		
+		print(colors.darkgrey('Deleting commands from database')) if self.verbose else None
 		self.cursor.execute('DELETE FROM commands')
 		usedActions = []
 		for items in userActions: 
+			print(colors.darkgrey('Requests for user input items %s' % items)) if self.verbose else None
 			# inputs user-defined passwords
 			userCommand = requestforinput(items, usedActions)
+			print(colors.darkgrey('Command was usable')) if self.verbose else None
 			usedActions.append(userCommand)
 
+			print(colors.darkgrey('Insert command into database')) if self.verbose else None
 			# saves user defined actions
 			self.cursor.execute('''INSERT INTO commands VALUES(?,?)''', (items, userCommand)) 
 			emptyline() if not self.verbose else None
-		listOfActions = []
 		self.file.commit()
 
 		# Commands have been changed, rebuild actions.
 		self.buildActionsPreferences()
 
+		return None
+
 	def quit(self):
 		# Raises quit -->Goes to global scope before quits
 		if self.preferences.get('askToQuit'):
+			print(colors.darkgrey('askToQuit returns true')) if self.verbose else None
 			print(colors.red('Are you sure to quit?[yn]'))
 			q = readchar.readchar()
 			if q != 'y':
+				print(colors.darkgrey('Choice %s != "y"' %q)) if self.verbose else None
 				return None
+		print(colors.darkgrey('Raising normalQuit')) if self.verbose else None
 		raise normalQuit
 
 	def delete(self):
+		print(colors.darkgrey('Getting current passwords')) if self.verbose else None
 		# Get current passwords
 		currentPwds = [(x[0], encsp(x[1],self.password), x[2]) for x in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]
+		print(colors.darkgrey('Getting terminal size')) if self.verbose else None
 		# Get terminal size
 		currentTerminalSize = shutil.get_terminal_size().lines - 10
 		currentTerminalClmn = shutil.get_terminal_size().columns
@@ -583,9 +635,10 @@ class userInterface():
 					print('{index:18}|{key:10}'.format(index=colors.yellow(currentPwds[i][0]), key=colors.green(currentPwds[i][1])))
 					i += 1
 				waitForInput(colors)
-				emptyline(currentTerminalSize + 4)
+				emptyline()
 		except IndexError:
 			print(colors.lightgreen('-'*currentTerminalClmn))
+			print(colors.darkgrey('All passwords outputted')) if self.verbose else None
 			waitForInput(colors)
 			pass
 		# Prints current password Index and Key
@@ -602,43 +655,46 @@ class userInterface():
 				fileToDel = str(' '.join(delete.split()[1:]))
 				# split gives out a list, ''join() returns back a string
 				if action == 'i':
+					print(colors.darkgrey('Searching by index')) if self.verbose else None
 					# Search by index
 					fileToDel = currentPwds[int(fileToDel) - 1][0]
 					correctInput = True
 				elif action == 'n':
+					print(colors.darkgrey('Search by key')) if self.verbose else None
 					# search by name
 					fileToDel = [str(x[0]) for x in currentPwds if str(x[1]) == str(fileToDel)][0]
-					if len(fileToDel) == 0:
-						# Nothing is returned. Search query does not exists
-						print(colors.red('This is not a valid value in your database! Please try again'))
-						waitForInput(colors)
-						emptyline()
-						pass
 					correctInput = True
 				elif action == 'h':
+					print(colors.darkgrey('Regenerating user databases')) if self.verbose else None
 					# Requests to input again
 					waitForInput(colors)
 					emptyline()
 					return self.delete()
 				else:
+					print(colors.darkgrey('Not a valid value inputted')) if self.verbose else None
 					# User enters jibberish
 					raise ValueError
 			except (IndexError, ValueError) as err:
+				print(colors.darkgrey('IndexError or ValueError is raised')) if self.verbose else None
 				# Goes back to line right after while 
 				print(colors.red('This is not a valid value in your database! Please try again'))
 				waitForInput(colors)
 				emptyline()
 				correctInput = False
 				continue
+		print(colors.darkgrey('Getting user entry ')) if self.verbose else None
 		file = self.cursor.execute('SELECT key FROM password WHERE id = (?)', (fileToDel,)).fetchone()[0]
 		# get file name
 		print(colors.red('Are you sure you want to delete %s\'s stored password?' % encsp(file, self.password)))
 		print(colors.red('The only way you would retrieve this password is from the most recent backup [yn]'))
 		k = readchar.readchar()
 		if k.lower() != 'y':
+			print(colors.darkgrey('User input %s != y'% k)) if not self.verbose else None
 			print(colors.blue('Password not deleted'))
 			self.log('Password not deleted')
 			return None
+
+		print(colors.darkgrey('Deleting entry from database')) if self.verbose else None
 		self.cursor.execute('''DELETE FROM password WHERE id = (?)''', (fileToDel,))
 		# Delete from database
 		print(colors.green(f'Password from {str(file)} deleted'))
@@ -649,7 +705,7 @@ class userInterface():
 
 	def help(self):
 		# Prints user help, lists all actions
-
+		print(colors.darkgrey('Getting user current commmands')) if self.verbose else None
 		for userActions in self.actions.items():
 
 			# Formatted user actions
@@ -658,32 +714,41 @@ class userInterface():
 
 		# Clears listed line , prevents data breach 
 		emptyline() if not self.verbose else None
+		return None
 
 	def exportPassword(self):
+		print(colors.darkgrey('Getting export type from database\nGetting export location from database')) if self.verbose else None
 		# Gets export file type
 		exportType = self.preferences.get('exportType')
 		# Gets export location
 		exportLocation = self.getExportLocation(bool(self.preferences.get('useDefaultLocation')))
+		print(colors.darkgrey('Getting current passwords')) if self.verbose else None
 		# Exports as different file
 		currentFiles = [(x[0], encsp(x[1], self.password), x[2]) for x in self.cursor.execute('SELECT * FROM password').fetchall()]
 		if os.path.isfile(os.path.join(exportLocation, self.userName + '.' + exportType)):
+			print(colors.darkgrey('Export is found in export file'))
 			# Export already exists
-			print(colors.yellow('You already have an exported file in %s! Please try again!') % exportLocation)
+			print(colors.yellow('You already have an exported file in %s! Please try again!') % exportLocation) if self.verbose else None
 			self.log('Export location has repeated file, password not exported')
 			waitForInput(colors)
 			emptyline()
 			return None
+		print(colors.darkgrey('Saving file')) if self.verbose else None
 		self.file.commit()
+		print(colors.darkgrey('Responding to exportType')) if self.verbose else None
 		if exportType == 'db':
+			print(colors.darkgrey('Connecting to export file\nCreating cursor object')) if self.verbose else None
 			# Database
 			exportFile = sqlite3.connect(os.path.join(exportLocation ,self.userName + '.db'))
 			# Creates export db file
 			exportCursor = exportFile.cursor()
 			exportFile.commit()
+			print(colors.darkgrey('Creating database table')) if self.verbose else None
 			exportCursor.execute('CREATE TABLE exportedPasswords (id char NOT NULL, key TEXT, password TEXT)')
 			# Creates cursor and table
 			self.log('Password Export Created')
 			for entries in currentFiles:
+				print('Writing current data into database %s/%s'%(str(currentFiles.index(entries)), str(len(currentFiles)))) if self.verbose else None
 				# Insert all entries into export database
 				if entries[0] != 0:
 					# Inserts values -- can be decryted
@@ -694,18 +759,23 @@ class userInterface():
 				else:
 					# Inserts values -- hashed and cannot be decrypted
 					exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)',(entries[0], encsp(entries[1], self.password), entries[2]))
+			print(colors.darkgrey('Saving and closing file')) if self.verbose else None
 			exportFile.commit()
 			exportCursor.close()
 			# Saves File and closes file
 
 		else:
+			print(colors.darkgrey('Creating backup file\nOpening file')) if self.verbose else None
 			with open(os.path.join(exportLocation, self.userName + '.' + exportType), 'w') as exportFile:
 				self.log('Password Export Created')
 				if exportType == 'txt':
+					print(colors.darkgrey('Initialising folder')) if self.verbose else None
 					# Text file
 					exportFile.write('{0:20} {1}'.format('Password key', 'Password'))
 					# Creates header in txt file
 					for entries in currentFiles:
+						print(colors.darkgrey('Writing entries into file: {0}/{1}'.format(currentFiles.index(entries),
+						len(currentFiles)))) if self.verbose else None
 						if currentFiles[0] != entries:
 							# Write - can be decrypted
 							decOrNo = entries[2] if bool(self.preferences.get('encryptExportDb')) else dec(entries[2], self.password)							
@@ -716,16 +786,19 @@ class userInterface():
 							exportFile.write('{0:20}:{1}\n'.format(encsp(entries[1], self.password), entries[2]))
 				
 				elif exportType == 'csv':
+					print(colors.darkgrey('importing python csv module')) if self.verbose else None
 					# Cursor seperated files
 					import csv
 					# import the python in-built csv modle
+					print(colors.darkgrey('Creating csv writer object\nInitialising folder')) if self.verbose else None
 					csvWriter = csv.writer(exportFile)
 
 					# Creates header in csv files
 					csvWriter.writerow(['Password key', 'Password'])
 					# Use standardized csv writer because ',' could appear in encrypted passwords
 					for entries in currentFiles:
-
+						print(colors.darkgrey('Writing entries into files: {0}/{1}'.format(currentFiles.index(entries),
+							len(currentFiles)))) if self.verbose else None
 						# Items saved
 						if currentFiles[0] != entries:
 							# Write - can be decrypted
@@ -737,6 +810,7 @@ class userInterface():
 							csvWriter.writerow([encsp(entries[1]), entries[2]])
 
 				elif exportType == 'json':
+					print(colors.darkgrey('Importing python json module')) if self.verbose else None
 					# I first disliked this but its actually fine -- json files. 12/12/19
 					import json
 					# import the in-built json module
@@ -745,7 +819,8 @@ class userInterface():
 					# Json file only takes 'dict' type entries
 
 					for entries in currentFiles:
-
+						print(colors.darkgrey('Updating dictionary item: {0}/{1}'.format(currentFiles.index(entries),
+						len(currentFiles)))) if self.verbose else None
 						# Enters into dictionary first
 						if currentFiles[0] != entries:
 							# updates dictionary -- can be decrypted
@@ -756,9 +831,10 @@ class userInterface():
 							# updates dictionary -- cannot be decrypted
 							encList.update({encsp(entries[1]): entries[2]})
 
+					print(colors.darkgrey('Dumping dictionary items into json file')) if self.verbose else None
 					# Put into file
 					json.dump(encList, exportFile)
-
+		print(colors.darkgrey('All entries inputted into export files'))
 		print(colors.red('DONE'))
 		# Tells user action has been finished
 
@@ -767,46 +843,59 @@ class userInterface():
 		waitForInput(colors)
 
 		emptyline() if not self.verbose else None
+		return None
 
 	def getExportLocation(self, useDefaultLocation):
 		# Gets user Export Location //From preferences
+		print(colors.darkgrey('Getting user export locations')) if self.verbose else None
 		exportLocation = ''
 		if useDefaultLocation:
+			print(colors.darkgrey('Using default export location')) if self.verbose else None
 			exportLocation = self.preferences.get('defExpLoc')
 		else:
+			print(colors.darkgrey('Not using defualt export location.\nRequesting User input')) if self.verbose else None
 			exportLocation = input(colors.red('Please enter your desired export location in command prompt syntax\n(e.g.: "~/Documents")\n>>>'))
 		# Expands location if user uses command line prompt syntax
-
+		print(colors.darkgrey('Getting current working directory\n{0}\nExpanding export location'.format(os.getcwd()))) if self.verbose else None
 		exportLocation = os.path.expanduser(exportLocation)
 
 		# Instances of error --> Not an actual location, Folder not accessible
 		if not os.path.isdir(exportLocation):
+			print(colors.darkgrey('Connecting file...failed\nReturn error:file does not exist')) if self.verbose else None
 			# Not an actual location
 			print(colors.lightred('%s is not a valid export location, please try again!' % exportLocation))
 			waitForInput(colors)
 			return(getExportLocation(self, False))
 
 		elif not os.access(exportLocation, os.W_OK):
+			print(colors.darkgrey(
+				'Connecting file...Success!\nTrying to create file...Failed\nReturn error: dir not accessible')) if self.verbose else None
 			# Folder not accessible
 			print(colors.red('%s is not accessable by this python module. \nPlease either use another location or run this application with sudo!'))
 			waitForInput(colors)
 			return(getExportLocation(self, False))
-		else:	
+		else:
+			print(colors.darkgrey(
+				'Connectinf file...Success!\nTrying to create file...Success!\nReturn Valid Dir')) if self.verbose else None
 			emptyline if not self.verbose else None
 			return exportLocation
 
 	def exportLog(self):
+		print(colors.darkgrey('Getting export file type')) if self.verbose else None
 		# Exports user log
 		exportType = self.preferences.get('exportType')
 
+		print(colors.darkgrey('Getting current logs from database')) if self.verbose else None
 		# Current logs
 		cLogs = [(encsp(x[0], self.password), encsp(x[1], self.password)) for x in self.cursor.execute('SELECT * FROM log').fetchall()]
 
+		print(colors.darkgrey('Getting export location')) if self.verbose else None
 		# Gets users export location
 		exportLocation = self.getExportLocation(bool(self.preferences.get('useDefaultLocation')))
 		# get backup location
-
+		print('Checking export file') if self.verbose else None
 		if os.path.isfile(os.path.join(exportLocation, self.userName +'_LOGS'+ '.' + exportType)):
+			print('Export file found') if self.verbose else None
 			# Export already exists
 			print(colors.yellow('You already have an exported file in %s! Please try again!') % exportLocation)
 			self.log('Export location has repeated file, password not exported')
@@ -817,33 +906,43 @@ class userInterface():
 		self.log('Asked for Log output request')
 
 		if exportType == 'db':
+			print(colors.darkgrey('Creating database file, connecting database and creating cursor object')) if self.verbose else None
 			# Database
 			exportFile = sqlite3.connect(os.path.join(exportLocation ,self.userName +'_LOGS'+ '.db'))
 			self.log('Export Created')
 			# Creates export db file
 			exportCursor = exportFile.cursor()
 			exportFile.commit()
+			print(colors.darkgrey('Creating database table LOGS')) if self.verbose else None
 			exportCursor.execute('CREATE TABLE logs (Timestamp TEXT NOT NULL, command TEXT)')
 			# Creates cursor and table
 			self.log('Logs exported')
+			print(colors.darkgrey('Inserting log values into database')) if self.verbose else None
 			exportCursor.executemany('INSERT INTO logs VALUES(?,?)', cLogs)
+			print(colors.darkgrey('Saving export file and closing file')) if self.verbose else None
 			exportFile.commit()
 			exportCursor.close()
 			# Saves File and closes file
 		else:
+			print(colors.darkgrey('Creating export file')) if self.verbose else None
 			with open(os.path.join(exportLocation, self.userName +'_LOGS'+ '.' + exportType), 'w') as exportFile:
 				self.log('Password Export Created')
 				if exportType == 'txt':
 					# Text file
+					print(colors.darkgrey('File created.\nInitialising file'))
 					exportFile.write('{0:30} {1}'.format('Timestamp', 'Action'))
 					# Creates header in txt file
 					for entries in cLogs:
+						print(colors.darkgrey('Writing logs into output file: {}/{}'.format(cLogs.index(entries),
+							len(cLogs)))) if self.verbose else None
 						exportFile.write('{0:30}:{1}\n'.format(entries[0], entries[1]))
 				
 				elif exportType == 'csv':
+					print(colors.darkgrey('Importing python csv module')) if self.verbose else None
 					# Cursor seperated files
 					import csv
 					# import the python in-built csv modle
+					print(colors.darkgrey('Connecting file\nInitialising file')) if self.verbose else None
 					csvWriter = csv.writer(exportFile)
 
 					# Creates header in csv files
@@ -851,9 +950,11 @@ class userInterface():
 
 					# Use standardized csv writer because ',' could appear in encrypted passwords
 					for entries in cLogs:
+						print(colors.darkgrey('Writiing logs into file, {}/{}'.format(cLogs.index(entries), len(cLogs)))) if self.verbose else None
 						csvWriter.writerow([entries[0], entries[1]])
 
 				elif exportType == 'json':
+					print(colors.darkgrey('Importing python json module')) if self.verbose else None
 					# I first disliked this but its actually fine -- json files. 12/12/19
 					import json
 					# import the in-built json module
@@ -862,11 +963,15 @@ class userInterface():
 					# Json file only takes 'dict' type entries
 
 					for entries in cLogs:
+						print(colors.darkgrey('Appending logs into dictionary: {}/{}'.format(cLogs.index(entries), 
+							len(cLogs)))) if self.verbose else None
 						outputList.update({entries[0]: entries[1]})
 
 					# Put into file
+					print(colors.darkgrey('Dumping dictionary into json file')) if self.verbose else None
 					json.dump(outputList, exportFile)
 
+		print(colors.darkgrey('All logs outputted\nFile closed')) if self.verbose else None
 		print(colors.red('DONE'))
 		# Tells user action has been finished
 
@@ -875,22 +980,27 @@ class userInterface():
 		waitForInput(colors)
 
 		emptyline() if not self.verbose else None
+		return None
 
 	def importFile(self):
 		# import files from backups 
 
+		print(colors.darkgrey('Generating backup folder name'))) if self.verbose else None
 		# backup location
 		backupName = hashlib.pbkdf2_hmac('sha224', 
 						self.userName.encode('utf-32'), b'e302b662ae87d6facf8879dc1dabc573', 
 						500000).hex() if self.preferences.get('hashBackupFile') else self.userName
 		try:
+			print(colors.darkgrey('Getting latest backup file')) if self.verbose else None
 			# Could possibly return an error if no backup files could be found
 			latestBackupFile = max([int(x[-12:-3]) for x in [f for d, b, f in os.walk(os.path.expanduser('~/Library/.pbu/.'+ backupName))][0]])
 		except ValueError:
+			print(colors.darkgrey('Fatal:No file can be retrieved')) if self.verbose else None
 			print(colors.red('Error:'), colors.orange('The backup folder has no backups avaliable! We are sorry but we cannot extract your file!'))	
 			return None
 		# print(latestBackupFile)
 		# change string into a datetime stamp
+		print(colors.darkgrey('Formatting backup file time')) if self.verbose else None
 		t = str(datetime.strptime(str(latestBackupFile), '%Y%j%H'))
 		print(colors.green('Your latest backup is on {day} {around} {time}'.format(day=colors.purple(t.split()[0]),
 		 around=colors.green('around'),time=colors.purple(t.split()[1][:5]))))
@@ -899,11 +1009,13 @@ class userInterface():
 		yn = readchar.readchar()
 		self.log('restored from backup')
 		if yn == 'y':
+			print(colors.darkgrey('Moving file from backup to current file')) if self.verbose else None
 			# Copies the file and would replace current file
 			shutil.copy2(
 				os.path.join(os.path.expanduser('~/Library/.pbu/.' + backupName), '.'+str(latestBackupFile) + '.db'),
 				# original file
 				os.path.join(os.path.expanduser('~/.password'), '.' + self.userName + '.db'))
+			print(colors.darkgrey('Done\nForce quit program\nRaise quit without backup')) if self.verbose else None
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
 			raise instantQuit
@@ -915,38 +1027,76 @@ class userInterface():
 			emptyline() if not self.verbose else None
 
 	def changePreferences(self):
-		def trueorfalse(string):
-			# defines user input to be true or false (used in changing preferences)
-			if string.lower() in ['true','1','t']:
-				# avaliable 'true' formats
-				return True
-			elif string.lower() in ['false','0','f']:
-				# avaliable 'flse formats'
-				return False
-			else:
-				# Neither
-				print(colors.red(f'Sorry but {string} is not in our approved list of true/false strings'))
-				print(colors.cyan('True: [\'true\', \'1\',\'t\']\nFalse: [\'false\', \'0\', \'f\']'))
-				waitForInput(colors)
+		class usrp():
+			def __init__(self, pref, index):
+				self.index = index
+				self.key, self.description, self.valueType, self.value, self.default, self.avaliable,  = pref
 
-		userpreferences = [row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()]
+			def __repr__(self):
+				return(str(self.description))
+
 		# get current preferences
+		emptyline() if not self.verbose else None
+		userPreferences = [usrp(x, count) for count, x in enumerate(
+			[row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()], start=1)]
 		print(colors.green('Here are your settings'))
-		print('{des:35}||{valueType:11}||{val:35}||{aval:30}'.format(des='description',valueType='value type',val='value',aval='avaliable'))
-		# formats output window
-
-
-		for prefs in userpreferences:
-			description = str(colors.cyan(prefs[1]))
-			# preference description
-			valueType = str(colors.blue(prefs[2]))
-			# prefernces value type
-			value = str(colors.lightgreen(prefs[3]))
-			# preferecne current value
-			avaliable = str(colors.yellow(prefs[5]))
-			# possible values
-			print(f'{description:38}||{valueType:22}||{value:4}||{avaliable:40}')
+		print(colors.purple('-')*shutil.get_terminal_size().columns)
+		# # print(userPreferences)
+		# # formats output window
+		vertLine = colors.purple('||')
+		print('{ind:5}{vertl}{des:29}{vertl}{valueType:11}{vertl}{val:35}{vertl}{aval:30}'.format(
+			ind= 'index',des='description',valueType='value type',val='value',aval='avaliable', vertl=vertLine))
+		for prefs in userPreferences:
+			print('{index:14}{vertl}{description:38}{vertl}{valType:20}{vertl}{val:44}{vertl}{avaliable:39}'.format(
+				index=colors.red(prefs.index), description=colors.cyan(prefs.description), valType=colors.lightgreen(prefs.valueType), val=colors.blue(prefs.value), 
+				avaliable=colors.yellow(prefs.avaliable), vertl=vertLine))
+		print(colors.purple('-'*os.get_terminal_size().columns))
 		waitForInput(colors)
+		changeItem = 'placeholder'
+		while changeItem != '':
+			try:
+				print(colors.green('Here are your settings'))
+				print(colors.purple('-')*shutil.get_terminal_size().columns)
+				# # print(userPreferences)
+				# # formats output window
+				vertLine = colors.purple('||')
+				print('{ind:5}{vertl}{des:29}{vertl}{valueType:11}{vertl}{val:35}{vertl}{aval:30}'.format(
+					ind= 'index',des='description',valueType='value type',val='value',aval='avaliable', vertl=vertLine))
+				for prefs in userPreferences:
+					print('{index:14}{vertl}{description:38}{vertl}{valType:20}{vertl}{val:44}{vertl}{avaliable:39}'.format(
+						index=colors.red(prefs.index), description=colors.cyan(prefs.description), valType=colors.lightgreen(prefs.valueType), val=colors.blue(prefs.value), 
+						avaliable=colors.yellow(prefs.avaliable), vertl=vertLine))
+				print(colors.purple('-'*os.get_terminal_size().columns))
+				waitForInput(colors)
+				currentPreferences = userPreferences
+				changeItem = 'placeholder'
+				changeItem = int(input('Please the index of the preference you would like to change:\n'))
+				
+
+			except ValueError:
+				print(colors.red('ValueError:')+colors.orange('Please enter an integer instead'))
+				changeItem = 'placeholder'
+				pass
+
+
+
+
+
+
+		# for count, prefs in enumerate(userpreferences, start=1):
+		# 	description = str(colors.cyan(prefs[1]))
+		# 	# preference decription
+		# 	valueType = str(colors.blue(prefs[2]))
+		# 	# prefernces value type
+		# 	value = str(colors.lightgreen(prefs[3]))
+		# 	# preferecne current value
+		# 	avaliable = str(colors.yellow(prefs[5]))
+		# 	# possible values
+		# waitForInput(colors)
+
+
+
+
 
 # self.cursor.executemany(
 # '''INSERT INTO userPreferences VALUES(?,?,?,?,?,?)''', 
