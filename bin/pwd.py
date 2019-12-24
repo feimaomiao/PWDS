@@ -127,7 +127,7 @@ def linktodb():
 		user.file.close()
 
 
-if __name__ == '__main__':
+def main():
 	# Checks if directory exists and initialises the screen
 	checkdir()
 	try:
@@ -147,3 +147,5 @@ if __name__ == '__main__':
 
 			'''))
 		quit()
+
+main()
