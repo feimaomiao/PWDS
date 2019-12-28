@@ -1,5 +1,5 @@
 # usr/bin/python3
-import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip
+import sqlite3, os, random, time, sys, hashlib, shutil, colreadchar, pyperclip
 from funcs import *
 from userClass import userInterface
 from datetime import datetime, timedelta

@@ -1027,17 +1027,9 @@ class userInterface():
 			emptyline() if not self.verbose else None
 
 	def changePreferences(self):
-		class usrp():
-			def __init__(self, pref, index):
-				self.index = index
-				self.key, self.description, self.valueType, self.value, self.default, self.avaliable,  = pref
-
-			def __repr__(self):
-				return(str(self.description))
-
 		# get current preferences
 		emptyline() if not self.verbose else None
-		userPreferences = [usrp(x, count) for count, x in enumerate(
+		userPreferences = [alterPrefs.usrp(x, count) for count, x in enumerate(
 			[row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()], start=1)]
 		print(colors.green('Here are your settings'))
 		print(colors.purple('-')*shutil.get_terminal_size().columns)
@@ -1048,7 +1040,8 @@ class userInterface():
 			ind= 'index',des='description',valueType='value type',val='value',aval='avaliable', vertl=vertLine))
 		for prefs in userPreferences:
 			print('{index:14}{vertl}{description:38}{vertl}{valType:20}{vertl}{val:44}{vertl}{avaliable:39}'.format(
-				index=colors.red(prefs.index), description=colors.cyan(prefs.description), valType=colors.lightgreen(prefs.valueType), val=colors.blue(prefs.value), 
+				index=colors.red(prefs.index), description=colors.cyan(prefs.description), valType=colors.lightgreen(prefs.valueType),
+				 val=colors.blue(prefs.value), 
 				avaliable=colors.yellow(prefs.avaliable), vertl=vertLine))
 		print(colors.purple('-'*os.get_terminal_size().columns))
 		waitForInput(colors)
@@ -1068,20 +1061,20 @@ class userInterface():
 						avaliable=colors.yellow(prefs.avaliable), vertl=vertLine))
 				print(colors.purple('-'*os.get_terminal_size().columns))
 				waitForInput(colors)
-				currentPreferences = userPreferences
 				changeItem = 'placeholder'
-				changeItem = int(input('Please the index of the preference you would like to change:\n'))
+				changeItem = int(input(colors.blue('Please the index of the preference you would like to change:\n\
+					]Simply press enter if you want to go back to the user interface')))
+				if changeItem- 1 > len(userPreferences):
+					print(colors.red('This is not a valid input! Please try again.'))
+					continue
+				changePref = [ps for ps in userPreferences if ps.index == changeItem][0]
+
 				
 
 			except ValueError:
 				print(colors.red('ValueError:')+colors.orange('Please enter an integer instead'))
 				changeItem = 'placeholder'
-				pass
-
-
-
-
-
+				continue
 
 		# for count, prefs in enumerate(userpreferences, start=1):
 		# 	description = str(colors.cyan(prefs[1]))
