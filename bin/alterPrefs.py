@@ -37,41 +37,39 @@ def validRequest(vartype):
 
 # # Exports preferences
 # ('encExpDb','Export files are encrypted','bool',True, True, 'True,False'),
-# ('useDefaultLocation','Use default export location','bool',True, True, 'True,False'),
+# ('useDefLoc','Use default export location','bool',True, True, 'True,False'),
 # ('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
 # ('defExpLoc','Default export location', 'string',os.path.expanduser('~/Documents'),
 #  os.path.expanduser('~/Documents'), 'True,False'),
 
 # # Backup preferences
-# ('createBackupFile','backup','bool',True, True, 'True,False'),
+# ('createBcF','backup','bool',True, True, 'True,False'),
 # ('backupFileTime','Backup Passwords time','string','d','d','h,d,w,2w,m,2m,6m,y,off'),
 # ('backupLocation','The location of back-up','string',os.path.expanduser('~/Library/.pbu'), os.path.expanduser('~/Library/.pbu'), ''),
 # ('hashBackupFile','Hashing the Backup File', 'bool', True,True, 'True,False'),
 
 # # Extrasecure 
 # ('hashUserFile', 'Hash User File Name', 'bool', False,False, 'True,False'),
-# ('createRandomFile','Creates random nonsense files', 'bool',False, False, 'True,False')
+# ('createRandF','Creates random nonsense files', 'bool',False, False, 'True,False')
 # ])
 class preferences():
 	def __init__(self, listOfPref):
+		self.verbose = 			[p for p in listOfPref if p.key == 'verbose'		][0]
+		self.copyAfterGet = 	[p for p in listOfPref if p.key == 'copyAfterGet'	][0]
+		self.askToQuit = 		[p for p in listOfPref if p.key == 'askToQuit'		][0]
+		self.customColor = 		[p for p in listOfPref if p.key == 'customColor'	][0]
+		self.logLogin = 		[p for p in listOfPref if p.key == 'logLogin'		][0]
+		self.encExpDb = 		[p for p in listOfPref if p.key == 'encExpDb'		][0]
+		self.useDefLoc = 		[p for p in listOfPref if p.key == 'useDefLoc'		][0]
+		self.exportType = 		[p for p in listOfPref if p.key == 'exportType'		][0]
+		self.defExpLoc = 		[p for p in listOfPref if p.key == 'defExpLoc'		][0]
+		self.createBcF = 		[p for p in listOfPref if p.key == 'createBcF'		][0]
+		self.backupFileTime = 	[p for p in listOfPref if p.key == 'backupFileTime'	][0]
+		self.backupLocation = 	[p for p in listOfPref if p.key == 'backupLocation'	][0]
+		self.hashBackupFile = 	[p for p in listOfPref if p.key == 'hashBackupFile'	][0]
+		self.hashUserFile = 	[p for p in listOfPref if p.key == 'hashUserFile'	][0]
+		self.createRandF = 		[p for p in listOfPref if p.key == 'createRandF'	][0]
 
-		for p in listOfPref:
-
-		self.verbose = [p for p in listOfPref if p.key == 'verbose'][0]
-		self.copyAfterGet = [p for p in listOfPref if p.key == 'copyAfterGet'][0]
-		self.askToQuit = [p for p in listOfPref if p.key == 'askToQuit'][0]
-		self.customColor = [p for p in listOfPref if p.key == 'customColor'][0]
-		self.logLogin = None
-		self.encExpDb = None
-		self.useDefaultLocation = None
-		self.exportType = None
-		self.defExpLoc = None
-		self.createBackupFile = None
-		self.backupFileTime = None
-		self.backupLocation = None
-		self.hashBackupFile = None
-		self.hashUserFile = None
-		self.createRandomFile = None
 
 
 

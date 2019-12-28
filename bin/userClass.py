@@ -103,21 +103,21 @@ class userInterface():
 			('logLogin','Record Logins','bool',True,True, 'True,False'),
 
 			# Exports preferences
-			('encryptExportDb','Export files are encrypted','bool',True, True, 'True,False'),
-			('useDefaultLocation','Use default export location','bool',True, True, 'True,False'),
+			('encExpDb','Export files are encrypted','bool',True, True, 'True,False'),
+			('useDefLoc','Use default export location','bool',True, True, 'True,False'),
 			('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
 			('defExpLoc','Default export location', 'string',os.path.expanduser('~/Documents'),
 			 os.path.expanduser('~/Documents'), 'Any folder'),
 
 			# Backup preferences
-			('createBackupFile','backup','bool',True, True, 'True,False'),
+			('createBcF','backup','bool',True, True, 'True,False'),
 			('backupFileTime','Backup Passwords time','string','d','d','h,d,w,2w,m,2m,6m,y,off'),
 			('backupLocation','The location of back-up','string',os.path.expanduser('~/Library/.pbu'), os.path.expanduser('~/Library/.pbu'), 'Any folder'),
 			('hashBackupFile','Hashing the Backup File', 'bool', True,True, 'True,False'),
 
 			# Extrasecure 
 			('hashUserFile', 'Hash User File Name', 'bool', False,False, 'True,False'),
-			('createRandomFile','Creates random nonsense files', 'bool',False, False, 'True,False')
+			('createRandF','Creates random nonsense files', 'bool',False, False, 'True,False')
 			])
 
 		# Save master password
@@ -496,7 +496,7 @@ class userInterface():
 				'.'+ backupName))][0]])
 		except ValueError:
 			print(colors.darkgrey('No backup can be retrieved'))  if self.verbose else None
-			self.backup() if user.preferences.get('createBackupFile') else None
+			self.backup() if user.preferences.get('createBcF') else None
 			return None
 
 		# Gets current time
@@ -721,7 +721,7 @@ class userInterface():
 		# Gets export file type
 		exportType = self.preferences.get('exportType')
 		# Gets export location
-		exportLocation = self.getExportLocation(bool(self.preferences.get('useDefaultLocation')))
+		exportLocation = self.getExportLocation(bool(self.preferences.get('useDefLoc')))
 		print(colors.darkgrey('Getting current passwords')) if self.verbose else None
 		# Exports as different file
 		currentFiles = [(x[0], encsp(x[1], self.password), x[2]) for x in self.cursor.execute('SELECT * FROM password').fetchall()]
@@ -752,7 +752,7 @@ class userInterface():
 				# Insert all entries into export database
 				if entries[0] != 0:
 					# Inserts values -- can be decryted
-					if bool(self.preferences.get('encryptExportDb')): 
+					if bool(self.preferences.get('encExpDb')): 
 						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', entries)
 					else: 
 						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', (entries[0], entries[1],dec(enctries[2], self.password)))
@@ -778,7 +778,7 @@ class userInterface():
 						len(currentFiles)))) if self.verbose else None
 						if currentFiles[0] != entries:
 							# Write - can be decrypted
-							decOrNo = entries[2] if bool(self.preferences.get('encryptExportDb')) else dec(entries[2], self.password)							
+							decOrNo = entries[2] if bool(self.preferences.get('encExpDb')) else dec(entries[2], self.password)							
 							exportFile.write('{0:20}:{1}\n'.format(entries[1], decOrNo)) 
 						
 						else:
@@ -802,7 +802,7 @@ class userInterface():
 						# Items saved
 						if currentFiles[0] != entries:
 							# Write - can be decrypted
-							decOrNo = entries[2] if bool(self.preferences.get('encryptExportDb')) else dec(entries[2], self.password)
+							decOrNo = entries[2] if bool(self.preferences.get('encExpDb')) else dec(entries[2], self.password)
 							csvWriter.writerow([entries[1], decOrNo])
 
 						else:
@@ -824,7 +824,7 @@ class userInterface():
 						# Enters into dictionary first
 						if currentFiles[0] != entries:
 							# updates dictionary -- can be decrypted
-							decOrNo = entries[2] if bool(self.preferences.get('encryptExportDb')) else dec(entries[2], self.password)
+							decOrNo = entries[2] if bool(self.preferences.get('encExpDb')) else dec(entries[2], self.password)
 							encList.update({entries[1]: decOrNo})
 
 						else:
@@ -845,11 +845,11 @@ class userInterface():
 		emptyline() if not self.verbose else None
 		return None
 
-	def getExportLocation(self, useDefaultLocation):
+	def getExportLocation(self):
 		# Gets user Export Location //From preferences
 		print(colors.darkgrey('Getting user export locations')) if self.verbose else None
 		exportLocation = ''
-		if useDefaultLocation:
+		if self.preferences.get('useDefLoc'):
 			print(colors.darkgrey('Using default export location')) if self.verbose else None
 			exportLocation = self.preferences.get('defExpLoc')
 		else:
@@ -891,7 +891,7 @@ class userInterface():
 
 		print(colors.darkgrey('Getting export location')) if self.verbose else None
 		# Gets users export location
-		exportLocation = self.getExportLocation(bool(self.preferences.get('useDefaultLocation')))
+		exportLocation = self.getExportLocation(bool(self.preferences.get('useDefLoc')))
 		# get backup location
 		print('Checking export file') if self.verbose else None
 		if os.path.isfile(os.path.join(exportLocation, self.userName +'_LOGS'+ '.' + exportType)):
@@ -1104,19 +1104,19 @@ class userInterface():
 # ('logLogin','Record Logins','bool',True,True, 'True,False'),
 
 # # Exports preferences
-# ('encryptExportDb','Export files are encrypted','bool',True, True, 'True,False'),
-# ('useDefaultLocation','Use default export location','bool',True, True, 'True,False'),
+# ('encExpDb','Export files are encrypted','bool',True, True, 'True,False'),
+# ('useDefLoc','Use default export location','bool',True, True, 'True,False'),
 # ('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
 # ('defExpLoc','Default export location', 'string',os.path.expanduser('~/Documents'),
 #  os.path.expanduser('~/Documents'), 'True,False'),
 
 # # Backup preferences
-# ('createBackupFile','backup','bool',True, True, 'True,False'),
+# ('createBcF','backup','bool',True, True, 'True,False'),
 # ('backupFileTime','Backup Passwords time','string','d','d','h,d,w,2w,m,2m,6m,y,off'),
 # ('backupLocation','The location of back-up','string',os.path.expanduser('~/Library/.pbu'), os.path.expanduser('~/Library/.pbu'), ''),
 # ('hashBackupFile','Hashing the Backup File', 'bool', True,True, 'True,False'),
 
 # # Extrasecure 
 # ('hashUserFile', 'Hash User File Name', 'bool', False,False, 'True,False'),
-# ('createRandomFile','Creates random nonsense files', 'bool',False, False, 'True,False')
+# ('createRandF','Creates random nonsense files', 'bool',False, False, 'True,False')
 # ])
