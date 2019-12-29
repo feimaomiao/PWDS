@@ -52,7 +52,7 @@ class userInterface():
 		print(colors.darkgrey('building colors')) if self.verbose else None
 		print(colors.darkgrey('getting preferences was successful')) if self.verbose else None
 		self.file.commit()
-		print(colors.darkgrey('Saving file and commiting user interface'))
+		print(colors.darkgrey('Saving file and commiting user interface')) if self.verbose else None
 
 		return None
 
@@ -106,13 +106,12 @@ class userInterface():
 			('encExpDb','Export files are encrypted','bool',True, True, 'True,False'),
 			('useDefLoc','Use default export location','bool',True, True, 'True,False'),
 			('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
-			('defExpLoc','Default export location', 'string',os.path.expanduser('~/Documents'),
-			 os.path.expanduser('~/Documents'), 'Any folder'),
+			('defExpLoc','Default export location', 'location','~/Documents','~/Documents', 'Any folder'),
 
 			# Backup preferences
 			('createBcF','backup','bool',True, True, 'True,False'),
-			('backupFileTime','Backup Passwords time','string','d','d','h,d,w,2w,m,2m,6m,y,off'),
-			('backupLocation','The location of back-up','string',os.path.expanduser('~/Library/.pbu'), os.path.expanduser('~/Library/.pbu'), 'Any folder'),
+			('backupFileTime','Backup Passwords time','location','d','d','h,d,w,2w,m,2m,6m,y,off'),
+			('backupLocation','The location of back-up','location','~/Library/.pbu', '~/Library/.pbu','Any folder'),
 			('hashBackupFile','Hashing the Backup File', 'bool', True,True, 'True,False'),
 
 			# Extrasecure 
@@ -459,7 +458,7 @@ class userInterface():
 
 		print(colors.darkgrey('Creating backup file')) if self.verbose else None
 		# joins path to determine file location
-		backupFile = os.path.join(self.preferences.get('backupLocation'),'.' + backupName,'.' +fileTime+'.db')
+		backupFile = os.path.join(os.path.expanduser(self.preferences.get('backupLocation')),'.' + backupName,'.' +fileTime+'.db')
 
 		print(colors.darkgrey('Copying file to backup folder')) if self.verbose else None
 		# shutil.copy is willing to replace
@@ -492,8 +491,8 @@ class userInterface():
 		# get the time of the latest backup
 		try:
 			print(colors.darkgrey('Getting user backup histories')) if self.verbose else None
-			latestBackup = max([int(fName[1:-3]) for fName in [files for r, d,files in os.walk(os.path.join(self.preferences.get('backupLocation'),
-				'.'+ backupName))][0]])
+			latestBackup = max([int(fName[1:-3]) for fName in [files for r, d,files in os.walk(os.path.join(
+				os.path.expanduser(self.preferences.get('backupLocation')),'.'+ backupName))][0]])
 		except ValueError:
 			print(colors.darkgrey('No backup can be retrieved'))  if self.verbose else None
 			self.backup() if user.preferences.get('createBcF') else None
@@ -689,7 +688,7 @@ class userInterface():
 		print(colors.red('The only way you would retrieve this password is from the most recent backup [yn]'))
 		k = readchar.readchar()
 		if k.lower() != 'y':
-			print(colors.darkgrey('User input %s != y'% k)) if not self.verbose else None
+			print(colors.darkgrey('User input %s != y'% k)) if self.verbose else None
 			print(colors.blue('Password not deleted'))
 			self.log('Password not deleted')
 			return None
@@ -851,7 +850,7 @@ class userInterface():
 		exportLocation = ''
 		if self.preferences.get('useDefLoc'):
 			print(colors.darkgrey('Using default export location')) if self.verbose else None
-			exportLocation = self.preferences.get('defExpLoc')
+			exportLocation = os.path.expanduser(self.preferences.get('defExpLoc'))
 		else:
 			print(colors.darkgrey('Not using defualt export location.\nRequesting User input')) if self.verbose else None
 			exportLocation = input(colors.red('Please enter your desired export location in command prompt syntax\n(e.g.: "~/Documents")\n>>>'))
@@ -985,7 +984,7 @@ class userInterface():
 	def importFile(self):
 		# import files from backups 
 
-		print(colors.darkgrey('Generating backup folder name'))) if self.verbose else None
+		print(colors.darkgrey('Generating backup folder name')) if self.verbose else None
 		# backup location
 		backupName = hashlib.pbkdf2_hmac('sha224', 
 						self.userName.encode('utf-32'), b'e302b662ae87d6facf8879dc1dabc573', 
@@ -1029,63 +1028,10 @@ class userInterface():
 	def changePreferences(self):
 		# get current preferences
 		emptyline() if not self.verbose else None
-		userPreferences = [alterPrefs.usrp(x, count) for count, x in enumerate(
-			[row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()], start=1)]
-		print(colors.green('Here are your settings'))
-		print(colors.purple('-')*shutil.get_terminal_size().columns)
-		# # print(userPreferences)
-		# # formats output window
-		vertLine = colors.purple('||')
-		print('{ind:5}{vertl}{des:29}{vertl}{valueType:11}{vertl}{val:35}{vertl}{aval:30}'.format(
-			ind= 'index',des='description',valueType='value type',val='value',aval='avaliable', vertl=vertLine))
-		for prefs in userPreferences:
-			print('{index:14}{vertl}{description:38}{vertl}{valType:20}{vertl}{val:44}{vertl}{avaliable:39}'.format(
-				index=colors.red(prefs.index), description=colors.cyan(prefs.description), valType=colors.lightgreen(prefs.valueType),
-				 val=colors.blue(prefs.value), 
-				avaliable=colors.yellow(prefs.avaliable), vertl=vertLine))
-		print(colors.purple('-'*os.get_terminal_size().columns))
-		waitForInput(colors)
-		changeItem = 'placeholder'
-		while changeItem != '':
-			try:
-				print(colors.green('Here are your settings'))
-				print(colors.purple('-')*shutil.get_terminal_size().columns)
-				# # print(userPreferences)
-				# # formats output window
-				vertLine = colors.purple('||')
-				print('{ind:5}{vertl}{des:29}{vertl}{valueType:11}{vertl}{val:35}{vertl}{aval:30}'.format(
-					ind= 'index',des='description',valueType='value type',val='value',aval='avaliable', vertl=vertLine))
-				for prefs in userPreferences:
-					print('{index:14}{vertl}{description:38}{vertl}{valType:20}{vertl}{val:44}{vertl}{avaliable:39}'.format(
-						index=colors.red(prefs.index), description=colors.cyan(prefs.description), valType=colors.lightgreen(prefs.valueType), val=colors.blue(prefs.value), 
-						avaliable=colors.yellow(prefs.avaliable), vertl=vertLine))
-				print(colors.purple('-'*os.get_terminal_size().columns))
-				waitForInput(colors)
-				changeItem = 'placeholder'
-				changeItem = int(input(colors.blue('Please the index of the preference you would like to change:\n\
-					]Simply press enter if you want to go back to the user interface')))
-				if changeItem- 1 > len(userPreferences):
-					print(colors.red('This is not a valid input! Please try again.'))
-					continue
-				changePref = [ps for ps in userPreferences if ps.index == changeItem][0]
-
-				
-
-			except ValueError:
-				print(colors.red('ValueError:')+colors.orange('Please enter an integer instead'))
-				changeItem = 'placeholder'
-				continue
-
-		# for count, prefs in enumerate(userpreferences, start=1):
-		# 	description = str(colors.cyan(prefs[1]))
-		# 	# preference decription
-		# 	valueType = str(colors.blue(prefs[2]))
-		# 	# prefernces value type
-		# 	value = str(colors.lightgreen(prefs[3]))
-		# 	# preferecne current value
-		# 	avaliable = str(colors.yellow(prefs[5]))
-		# 	# possible values
-		# waitForInput(colors)
+		preferenceClass = alterPrefs.preferences([alterPrefs.usrp(x, count) for count, x in enumerate(
+			[row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()], start=1)])
+		preferenceClass.buildPrefs()
+		preferenceClass.changePrefs()
 
 
 
