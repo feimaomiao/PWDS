@@ -56,6 +56,7 @@ _Now supports any character!!_
 #### More hashing ####
 Anything that includes the process of using your password now uses hashed password (of course)  
 No functionality addition  
+- - - -
 ### 2019/12/20 12:07 ###
 It's been a few days since I last commited cus I have my finals  
 just finished my finals so the update should be faster and its holiday I mean...  
@@ -66,18 +67,26 @@ The past few days I changed the 'colors' returning method, making it a bit faste
 #### Fixed encryption method! ####
 I also fixed the 'last character problem' in enc.py, eliminating possible errors.
 ### 2019/12/24 00:10 ###
+- - - -
 Whoa it's been a few days since my last push.  
 Spent my weekend going around killing time...did't work a whole lot on it lol  
 Added many many more functionality to option `verbose` 
 New file alterPrefs. Used to change preferences `still in development`  
+- - - -
 ### 2019/12/28 18:03 ###
 Merry christmas everyone!  
 Sorry for late update cus the last few days were really busy and only minor changes could be done  
 alterPrefs is close to finishing. Then I have to figure out how to implement some of the preferences `still in development`  
 Renamed `bin` to `exec`
+- - - -
 ### 2019/12/29 03:57 ###
 Finished functionality of change preference function
 Alterprefs is finished!!!!`done`  
 still need more comments to make code easier to read `still in deveopment`  
 New file `random.json` to import random to `funcs.py`  
 Changed `backup` function for the `userPrefs` function
+- - - -
+### 2019/12/29/13:17 ###
+Done sleeping. 
+Added requirements.txt
+modified gitignore
