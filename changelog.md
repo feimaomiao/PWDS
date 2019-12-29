@@ -70,3 +70,8 @@ Whoa it's been a few days since my last push.
 Spent my weekend going around killing time...did't work a whole lot on it lol  
 Added many many more functionality to option `verbose` 
 New file alterPrefs. Used to change preferences `still in development`  
+### 2019/12/28 18:03 ###
+Merry christmas everyone!  
+Sorry for late update cus the last few days were really busy and only minor changes could be done  
+alterPrefs is close to finishing. Then I have to figure out how to implement some of the preferences `still in development`  
+Renamed bin to exec
