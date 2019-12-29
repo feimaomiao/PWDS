@@ -1,5 +1,5 @@
 # usr/bin/python3
-import sqlite3, os, random, time, sys, hashlib, shutil, colreadchar, pyperclip
+import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip
 from funcs import *
 from userClass import userInterface
 from datetime import datetime, timedelta
@@ -36,7 +36,7 @@ def checkdir():
 		text = 'Creating folder' 
 
 		# Creates .password folder in checkdir folder is hidden
-		os.mkdir(os.path.expanduser('~/.password')) if not os.path.isdir(os.expanduser('~/.password')) else None
+		os.mkdir(os.path.expanduser('~/.password')) if not os.path.isdir(os.path.expanduser('~/.password')) else None
 		os.mkdir(os.path.expanduser('~/Library/.pbu'))
 
 	print(colors.blue('Initialising user workspace:') ,colors.lightgrey(text))
