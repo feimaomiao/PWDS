@@ -74,4 +74,10 @@ New file alterPrefs. Used to change preferences `still in development`
 Merry christmas everyone!  
 Sorry for late update cus the last few days were really busy and only minor changes could be done  
 alterPrefs is close to finishing. Then I have to figure out how to implement some of the preferences `still in development`  
-Renamed bin to exec
+Renamed `bin` to `exec`
+### 2019/12/29 03:57 ###
+Finished functionality of change preference function
+Alterprefs is finished!!!!`done`  
+still need more comments to make code easier to read `still in deveopment`  
+New file `random.json` to import random to `funcs.py`  
+Changed `backup` function for the `userPrefs` function

@@ -46,7 +46,7 @@ def checkdir():
 def linktodb():
 
 	# Asks for name
-	userName = input('Please enter your username:\n') 
+	userName = input('Please enter your username:\n').lower()
 	emptyline()
 
 	# possible outputs if hashfile is checked
@@ -88,7 +88,7 @@ def linktodb():
 		# user.new()
 		# user.get()
 		# user.changePassword()
-		# user.backup()
+		user.backup()
 		# user.changeCommand()
 		# user.checkBackup()
 		# user.exportPassword()

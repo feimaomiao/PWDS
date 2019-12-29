@@ -10,35 +10,39 @@ class usrp():
 	def __repr__(self):
 		return(str(self.key))
 
-def reqBool(colors):
-	usrinput = input(colors.green('Type=Bool\nPossible = ["t","true","y","yes","f","false","n","no","d", "def","default"]\nPlease enter your choice\n')).lower()
-	possible = {'t':True,'true':True,'y':True,'yes':True,'f':False,'false':False,'n':False,'no':False,'def':'def','default':'def','d':'def'}
-	if usrinput not in possible.keys():
-		emptyline()
-		print(colors.red('This is not a valid result!Please enter again!')) 
-		return reqBool(colors)
-	return possible.get(usrinput)
-
-def reqStrIL(inpLIst, colors):
-	usrinput = input(colors.green(f'Type=String in list\nPossible={inpLIst}\nPlease enter your choice\n'))
-	if usrinput not in inpLIst:
-		emptyline()
-		print(colors.red('This is not a valid result!\nPlease enter again!'))
-		return reqStrIL(inpLIst, colors)
-	return usrinput
-
-def reqLoc(colors):
-	usrinput = input(colors.green(f'Type=Location\nPossible=All\nPlease enter a location with unix-like file("~/Path/to/destination")\n'))
-	if not os.access(os.path.expanduser(usrinput), os.W_OK) or not os.path.isdir(os.path.expanduser(usrinput)):
-		emptyline()
-		print(colors.red('This is not a valid path!\nPlease try again!'))
-		return reqLoc(colors)
-	return usrinput
-
 class preferences():
 	def __init__(self, listOfPref):
 		self.preferenceDicts = {}
 		self.lisfofPref = listOfPref
+
+	def reqBool(self,colors):
+		usrinput = input(colors.green('Type=Bool\nPossible = ["t","true","y","yes","f","false","n","no","d", "def","default"]\nPlease enter your choice\n')).lower()
+		possible = {'t':True,'true':True,'y':True,'yes':True,'f':False,'false':False,'n':False,'no':False,'def':'def','default':'def','d':'def'}
+		if usrinput not in possible.keys():
+			self.clear()
+			print(colors.red('This is not a valid result!Please enter again!')) 
+			return self.reqBool(colors)
+		return possible.get(usrinput)
+
+	def reqStrIL(inpLIst, colors):
+		usrinput = input(colors.green(f'Type=String in list\nPossible={inpLIst}\nPlease enter your choice\n'))
+		if usrinput not in inpLIst:
+			self.clear()
+			print(colors.red('This is not a valid result!\nPlease enter again!'))
+			return self.reqStrIL(inpLIst, colors)
+		return usrinput
+
+	def reqLoc(self,colors):
+		usrinput = input(colors.green(f'Type=Location\nPossible=All\nPlease enter a location with unix-like file("~/Path/to/destination")\n'))
+		if not os.access(os.path.expanduser(usrinput), os.W_OK) or not os.path.isdir(os.path.expanduser(usrinput)):
+			self.clear()
+			print(colors.red('This is not a valid path!\nPlease try again!'))
+			return self.reqLoc(colors)
+		return usrinput
+
+	def clear(self):
+		emptyline() if not bool(self.preferenceDicts.get('verbose')) else None
+		return None
 
 	def buildPrefs(self):
 		for items in self.lisfofPref:
@@ -75,50 +79,21 @@ class preferences():
 			outputVal = bool(changeItem.value) if changeItem.valueType == 'bool' else str(changeItem.value)
 			print(colors.blue(f'You are going to change {changeItem.key}.\nThe current value is {outputVal}.\nDefault value is {changeItem.index}'))
 			if changeItem.valueType == 'bool':
-				newvalue = reqBool(colors)
+				newvalue = self.reqBool(colors)
 				if newvalue == 'def':
 					changeItem.value = changeItem.default
 				else:
 					changeItem.value = bool(newvalue)
 			elif changeItem.valueType == 'str in list':
-				newvalue = reqStrIL(changeItem.avaliable.split(',')+['def'], colors)
+				newvalue = self.reqStrIL(changeItem.avaliable.split(',')+['def'], colors)
 				changeItem.value = changeItem.default if newvalue == 'def' else newvalue
 			else:
-				newvalue = reqLoc(colors)
+				newvalue = self.reqLoc(colors)
 				changeItem.value = newvalue
-				print(changeItem.value)
 			emptyline()
 		waitForInput(colors)
+		return None
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	def returnList(self):
+		print(self.preferenceDicts)
+		return [vals for k, vals in self.preferenceDicts.items()]

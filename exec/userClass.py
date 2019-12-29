@@ -1,4 +1,4 @@
-import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip, alterPrefs
+import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip, alterPrefs, copy
 from datetime import datetime, timedelta
 from funcs import *
 from enc import encrypt as enc, decrypt as dec, encsp
@@ -39,17 +39,17 @@ class userInterface():
 			#get true/false/defined value
 			self.preferences.update({prefs[0]: bool(int(prefs[3])) if prefs[3] in ['0','1', 0, 1] else prefs[3]}) 
 
-		# builds user actions
-		self.actions = {encsp(k, self.password): v for v, k in dict(self.cursor.execute('SELECT * FROM commands').fetchall()).items()}
-
 		# Assign to verbose
 		self.verbose = self.preferences.get('verbose')
 
+		# builds user actions
+		self.actions = {encsp(k, self.password): v for v, k in dict(self.cursor.execute('SELECT * FROM commands').fetchall()).items()}
 
-		# Set colors after building user prefernces
+		# Set colors after building user preferences
 		global colors
 		colors = buildColors(self.preferences.get('customColor'))
 		print(colors.darkgrey('building colors')) if self.verbose else None
+		print(colors.darkgrey('Building preferences...Done\nGetting user commands')) if self.verbose else None
 		print(colors.darkgrey('getting preferences was successful')) if self.verbose else None
 		self.file.commit()
 		print(colors.darkgrey('Saving file and commiting user interface')) if self.verbose else None
@@ -436,8 +436,9 @@ class userInterface():
 		self.cursor.executemany('''INSERT INTO commands VALUES (?,?)''', userCommands)
 		return None
 
-	def backup(self):
+	def backup(self,oldbackupName=''):
 
+		oldbackupName = self.userName if len(oldbackupName)==0 else oldbackupName
 		# Save after log 
 		self.log('CreatedBackup')
 		print(colors.darkgrey('Backup created\nFile saved')) if self.verbose else None
@@ -445,9 +446,10 @@ class userInterface():
 
 		print(colors.green('Backing up....'))
 
-		print(colors.darkgrey('Getting current time success')) if self.verbose else None
 		# Generates backup db name
 		now = time.time()
+
+		print(colors.darkgrey('Getting current time success')) if self.verbose else None
 		fileTime = str(time.localtime(now).tm_year).zfill(4) + str(time.localtime(now).tm_yday).zfill(3) + str(time.localtime(now).tm_hour).zfill(2)
 
 		print(colors.darkgrey('Generating backup file name')) if self.verbose else None
@@ -455,19 +457,21 @@ class userInterface():
 		backupName = hashlib.pbkdf2_hmac('sha224', 
 						self.userName.encode('utf-32'), b'e302b662ae87d6facf8879dc1dabc573', 
 						500000).hex() if self.preferences.get('hashBackupFile') else self.userName
+		# Makes backup directory
+		try:
+			os.mkdir(os.path.join(os.path.expanduser(self.preferences.get('backupLocation')),'.'+backupName))
+		except FileExistsError:
+			pass
 
 		print(colors.darkgrey('Creating backup file')) if self.verbose else None
 		# joins path to determine file location
 		backupFile = os.path.join(os.path.expanduser(self.preferences.get('backupLocation')),'.' + backupName,'.' +fileTime+'.db')
 
+
 		print(colors.darkgrey('Copying file to backup folder')) if self.verbose else None
 		# shutil.copy is willing to replace
 		# Copies file to backup file
-		shutil.copy2(
-			# original file
-			os.path.join(os.path.expanduser('~/.password'), '.' + self.userName + '.db'), 
-			# backup location
-			backupFile)
+		shutil.copy2(os.path.join(os.path.expanduser('~/.password'), '.' + oldbackupName+'.db'), backupFile)
 
 		# Logs backup
 		self.log('Backup copied successfully')
@@ -1028,28 +1032,131 @@ class userInterface():
 	def changePreferences(self):
 		# get current preferences
 		emptyline() if not self.verbose else None
+
+		# Get a set of preferences and copy it
+		oldPreferences = self.preferences.copy()
+		print(colors.darkgrey('Fetching current preferences')) if self.verbose else None
+		
+		# Give out a list of 'preference' class
+		# Change list of class to a big class in which changing operations can be done
 		preferenceClass = alterPrefs.preferences([alterPrefs.usrp(x, count) for count, x in enumerate(
 			[row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()], start=1)])
+		print(colors.darkgrey('Building preference model')) if self.verbose else None
+
+		# Assign preferences in class
 		preferenceClass.buildPrefs()
+		print(colors.darkgrey('Changing preference values')) if self.verbose else None
+
+		# Change user prefrences in prefrence object '''recursive function!!''''
 		preferenceClass.changePrefs()
+		print(colors.darkgrey('Updating preferences...\nDeleting old values\nInserting new values')) if self.verbose else None
+
+		# Delete old preferences
+		self.cursor.execute('''DELETE FROM userPreferences''')
+		# Add in new preferences
+		self.cursor.executemany('''INSERT INTO userPreferences VALUES(?,?,?,?,?,?)''',
+			[(x.key,x.description,x.valueType,x.value,x.default,x.avaliable) for x in preferenceClass.returnList()])
+		print(colors.darkgrey('Building new preferences')) if self.verbose else None
+
+		# Build user prefrences based on current preferernces
+		self.buildActionsPreferences()
+
+		print(colors.darkgrey('Getting differences'))if self.verbose else None
+
+		# Get difference of preferences from two different sets
+		difference = dict(set(self.preferences.items())-set(oldPreferences.items()))
+		print(colors.darkgrey('Building new functions')) if self.verbose else None
+		print(difference.items())
+
+		oldBackupName = self.userName if not oldPreferences.get('hashBackupFile') else hashlib.pbkdf2_hmac('sha224', 
+				self.userName.encode('utf-32'), b'e302b662ae87d6facf8879dc1dabc573', 500000).hex() 
+		print(colors.darkgrey('Getting old backup file...successful!\n%s'%oldBackupName)) if self.verbose else None
+
+		# Gets old backup location
+		oldBackupLocation = os.path.join(os.path.expanduser(oldPreferences.get('backupLocation')) ,'.'+oldBackupName)
+		print(colors.darkgrey('Getting old backup location...successful!\n%s'%oldBackupLocation)) if self.verbose else None
+
+		# Removes old backup folder
+		if oldPreferences.get('createBcF'):
+
+
+			print(colors.darkgrey('Deleting backup folder')) if self.verbose else None
+			print(colors.darkgrey(f'The old backup folder has a size of {os.path.getsize(oldBackupLocation)}bytes')) if self.verbose else None
+
+			# removes file
+			shutil.rmtree(oldBackupLocation)
+
+			print(colors.darkgrey('successful!')) if self.verbose else None
+
+		# Value in dict key 'hashuserfile' is changed
+		if 'hashUserFile' in difference.keys():
+			print(colors.darkgrey('making copy of old userName')) if self.verbose else None
+			# Make a copy of the old username
+			oldUserName = self.userName
+			print(colors.darkgrey('Gettting new user name')) if self.verbose else None
+
+			# change from not hashing user file to hashing user file
+			if self.preferences.get('hashUserFile'):
+				print(colors.darkgrey('Hashing user name')) if self.verbose else None
+				self.userName = hashlib.pbkdf2_hmac('sha224', self.userName.encode('utf-32'), b'08944de8a152170e823f865c7a41d75c', 500000).hex()
+
+			# change from hashing user file to not hashing user file-->Need to re input username
+			else:
+				print(colors.darkgrey('Requesting new username')) if self.verbose else None
+				self.userName = input('Please enter a new user name')
+		else:
+			print(colors.darkgrey('Setting username')) if self.verbose else None
+			oldUserName = self.userName
+
+		# Backup
+		if any(x in difference.keys() for x in['hashUserFile','backupLocation','hashBackupFile']) or self.preferences.get('createBcF'):
+			self.backup(oldUserName)
+
+		# Create bunch of random file to make the creepers don't know what to do
+		if 'createRandF' in difference.keys() and self.preferences.get('createRandF'):
+			print(colors.red('You are about to run action "create random file", this is a one-way function. Are you sure you to proceed?[yn]'))
+			randf = readchar.readchar()
+			if randf != 'y':
+				self.cursor.execute('''UPDATE userPreferences SET Value = 0 WHERE sysdefname = "createRandF"''')
+			else:
+				numsOfRandFiles = input('How many random files do you want to create?[number]')
+
+				# User did not enter an integer
+				if numsOfRandFiles.isdigit():
+					print(colors.darkgrey('Good. You can read english')) if self.verbose else None
+					numsOfRandFiles = int(numsOfRandFiles)
+
+				# User did enter an integer
+				else:
+					print(colors.darkgrey('Seems like someone doesn\'t know what is "integer"\nSetting number to 50')) if self.verbose else None
+					numsOfRandFiles = 50
+
+
+				print(colors.yellow(f'Please allow up to {0.123*numsOfRandFiles} seconds'))
+				createRandomFile(num=numsOfRandFiles, printall=self.verbose, color=colors.darkgrey)
+				print(colors.yellow('Done!'))
+		if 'hashUserFile' in difference.keys():
+			self.cursor.close()
+			self.file.commit()
+			self.file.close()
+			os.rename(os.path.join(os.path.expanduser('~'),'.password','.'+oldUserName+'.db'),
+				os.path.join(os.path.expanduser('~'),'.password','.'+self.userName+'.db'))
+			self.file = sqlite3.connect(os.path.join(os.path.expanduser('~'),'.password','.'+self.userName+'.db'))
+			self.cursor = self.file.cursor()
+		return None
+
+
+		# os.path.
+		time.sleep(10000)
 
 
 
 
 
-# self.cursor.executemany(
-# '''INSERT INTO userPreferences VALUES(?,?,?,?,?,?)''', 
-# # list of preferences avaliable
-# [
 
-# # System preferences in UI
-# ('verbose','Shows everything', 'bool', False, False, 'True,False'), 
-# ('copyAfterGet','Copy password after output', 'bool',True, True, 'True,False'),
-# ('askToQuit','Ask before quit','bool',False, False, 'True,False'),
-# ('customColor','Use custom color', 'bool',True, True, 'True,False'),
-# ('logLogin','Record Logins','bool',True,True, 'True,False'),
 
-# # Exports preferences
+
+
 # ('encExpDb','Export files are encrypted','bool',True, True, 'True,False'),
 # ('useDefLoc','Use default export location','bool',True, True, 'True,False'),
 # ('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
