@@ -284,8 +284,7 @@ def encrypt(encs, pwd):
 	encs = ''.join(str(ord(chars)).zfill(7) for chars in str(encs))
 	front0s = [encs.index(i) for i in encs if i != '0'][0]
 	ending0s = len(encs) - len(encs.rstrip('0'))
-	npwd = ''.join(str(ord(l)) for l in str(hashlib.pbkdf2_hmac(
-		'sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex()))
+	npwd = int(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex(), 16)
 	intencd = str(int(encs) * int(npwd))
 	cy = ''.join(random.choices([m for m in newdec.values()], k=4)) + str(front0s).zfill(2) + str(ending0s).zfill(2)
 	for p in [int(intencd[i:i+2]) for i in range(0, len(intencd), 2)]:
@@ -296,8 +295,7 @@ def decrypt(decs, pwd):
 	decs = encsp(decs, pwd)
 	zeros = decs[4:8]
 	product = ''.join([str(newd.get(i)).zfill(2) for i in decs[8:]])
-	npwd = ''.join(str(ord(l)) for l in str(hashlib.pbkdf2_hmac(
-		'sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex()))
+	npwd = int(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex(), 16)
 	divided = str(int(product) // int(npwd))
 	subzeroed = ('0' * int(zeros[:2]) if int(zeros[:2]) > 0 else '') + divided + ('0' * int(zeros[2:]) if int(zeros[2:])> 0 else '')
 	subzlist = [int(subzeroed[i:i+7]) for i in range(0,len(subzeroed), 7)]

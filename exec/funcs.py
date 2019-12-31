@@ -130,20 +130,20 @@ def createRandomFile(num, printall, color):
 		[
 
 		# System preferences in UI
-		('verbose','Shows everything', 'bool', False, False, 'True,False'), 
-		('copyAfterGet','Copy password after output', 'bool',True, True, 'True,False'),
-		('askToQuit','Ask before quit','bool',False, False, 'True,False'),
-		('customColor','Use custom color', 'bool',True, True, 'True,False'),
-		('logLogin','Record Logins','bool',True,True, 'True,False'),
+		('verbose','Shows everything', 'bool', random.choice(True, False), False, 'True,False'), 
+		('copyAfterGet','Copy password after output', 'bool',random.choice(True, False), True, 'True,False'),
+		('askToQuit','Ask before quit','bool',random.choice(True,False), False, 'True,False'),
+		('customColor','Use custom color', 'bool',random.choice(True,False), True, 'True,False'),
+		('logLogin','Record Logins','bool',random.choice(True,False),True, 'True,False'),
 
 		# Exports preferences
 		('encExpDb','Export files are encrypted','bool',True, True, 'True,False'),
 		('useDefLoc','Use default export location','bool',True, True, 'True,False'),
-		('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
+		('exportType','Export type','str in list','db',random.choice(['csv','db','json','txt']), 'csv,db,json,txt'),
 		('defExpLoc','Default export location', 'location','~/Documents','~/Documents', 'Any folder'),
 
 		# Backup preferences
-		('createBcF','backup','bool',True, True, 'True,False'),
+		('createBcF','backup','bool',random.choice(True, False), True, 'True,False'),
 		('backupFileTime','Backup Passwords time','location','d','d','h,d,w,2w,m,2m,6m,y,off'),
 		('backupLocation','The location of back-up','location','~/Library/.pbu', '~/Library/.pbu','Any folder'),
 		('hashBackupFile','Hashing the Backup File', 'bool', True,True, 'True,False'),

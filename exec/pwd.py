@@ -85,20 +85,20 @@ def linktodb():
 
 		# Returning user will be directed immediately to login page
 		user.login()
-		# user.new()
+		user.delete()
+		user.new()
+		user.new()
 		# user.get()
 		# user.changePassword()
-		user.backup()
+		# user.backup()
 		# user.changeCommand()
 		# user.checkBackup()
 		# user.exportPassword()
 		# user.exportLog()
 		# user.importFile()
-		# user.delete()
-		user.changePreferences()
+		# user.changePreferences()
 		# [print('{0:40}{1:40}\n'.format(str(x), str(value))) for x, value in user.actions.items()]
-		time.sleep(100000)
-		# user.quit()
+		user.quit()
 	except WrongPassWordError:
 		raise 
 	except normalQuit:
