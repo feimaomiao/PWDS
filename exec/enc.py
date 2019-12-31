@@ -237,11 +237,7 @@ encd = {
 	'ﬂ' : 127,
 	'§' : 128}
 
-decd = {v: k for k, v in encd.items()}
-
-def encsp(string, password):
-	inv = {'0': '1', '1': '0'}
-	keyd = {
+keyd = {
 	0: 0,
 	1:(0,1),
 	2:(0,2),
@@ -270,34 +266,71 @@ def encsp(string, password):
 	25:4,
 	26:5,
 	27:6}
+
+decd = {v: k for k, v in encd.items()}
+
+def encsp(string, password):
+	# Dict to replace digits
+	inv = {'0': '1', '1': '0'}
+	
+	# Generates a key which is used in 'keyd'
 	key = ((len(str(password))+len(str(string))) % 28)
+
+	# Change string to bin
 	spbin = ["{0:b}".format(int(encd.get(chars))).zfill(7) for chars in string]
 	ilist = []
 	for items in spbin:
 		spstr = ''
 		for count, bins in enumerate(items):
+
+			# switch binary digis
 			spstr = spstr + (bins if str(count) in str(keyd.get(key)) else inv.get(str(bins)))
 		ilist.append(spstr)
+
+	# Changes binary digits back to readable digits and returns item
 	return ''.join([decd.get(int(str(i), 2)) for i in ilist])
 
+
 def encrypt(encs, pwd):
+	# Change every character to integer
 	encs = ''.join(str(ord(chars)).zfill(7) for chars in str(encs))
+
+	# Calculate zeros in front of string and end of string
 	front0s = [encs.index(i) for i in encs if i != '0'][0]
 	ending0s = len(encs) - len(encs.rstrip('0'))
+
+	# Hash password and change to base-10 digit
 	npwd = int(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex(), 16)
+
+	# Multiply two numbers
 	intencd = str(int(encs) * int(npwd))
+
+	# Generate a string with ints only
 	cy = ''.join(random.choices([m for m in newdec.values()], k=4)) + str(front0s).zfill(2) + str(ending0s).zfill(2)
 	for p in [int(intencd[i:i+2]) for i in range(0, len(intencd), 2)]:
 		cy += newdec.get(p)
+
+	# Tweak with binaries
 	return encsp(cy, pwd)
 
 def decrypt(decs, pwd):
+	# Tweak with binaries
 	decs = encsp(decs, pwd)
+
+	# Get trailing and ending zeros
 	zeros = decs[4:8]
+
+	# Get int products
 	product = ''.join([str(newd.get(i)).zfill(2) for i in decs[8:]])
+
+	# Get hashed password
 	npwd = int(hashlib.pbkdf2_hmac('sha512', str(pwd).encode('utf-32'), ''.join(sorted(pwd, reverse=True)).encode('utf-32'), 300000).hex(), 16)
+
+	# Divide product by password
 	divided = str(int(product) // int(npwd))
 	subzeroed = ('0' * int(zeros[:2]) if int(zeros[:2]) > 0 else '') + divided + ('0' * int(zeros[2:]) if int(zeros[2:])> 0 else '')
+
+	# Split divided product by 7 characters
 	subzlist = [int(subzeroed[i:i+7]) for i in range(0,len(subzeroed), 7)]
 	if subzlist[-1] <10 and subzlist[-1]>0:
 		subzlist[-2] += 1
@@ -305,21 +338,3 @@ def decrypt(decs, pwd):
 	elif subzlist[-1] == 0:
 		subzlist.pop(-1)
 	return ''.join([chr(k) for k in subzlist])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

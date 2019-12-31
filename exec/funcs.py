@@ -75,7 +75,10 @@ def randomPwd():
     return ''.join(random.choice(password_characters) for i in range(15))
 
 def createRandomFile(num, printall, color):
+	# re-import string -- I don't know why it works but it does. 
+	# Please don't delete or it will fail miserably
 	import string 
+
 	# Function to output logs
 	def logifvb(pval, p=printall, clr=color):
 		print(color(pval)) if p else None
@@ -83,20 +86,30 @@ def createRandomFile(num, printall, color):
 	# List of random names
 	names = json.loads(open('random.json').read())
 	for count in range(num):
-		logifvb(count)
+		print(count)
+
+		# Generates a name to use in a file
 		name=''.join(random.choices([' '.join(random.choices(names,k=2)), random.choices(string.hexdigits, k=25)], weights=[1,3])[0]).lower()
 		logifvb('Name chosen')
+
+		# create user database file and create cursor object
 		file = sqlite3.connect(os.path.join(os.path.expanduser('~'), '.password','.'+name+'.db'))
 		logifvb('File Created')
 		cursor = file.cursor()
 		logifvb('Cursor Created')
+
+		# Create tables
 		cursor.execute('''CREATE TABLE password(id INT, key TEXT, password TEXT)''')
 		cursor.execute('''CREATE TABLE commands(globalcmd TEXT, usrcmd TEXT)''')
 		cursor.execute('''CREATE TABLE log(logtime TEXT, log TEXT)''')
 		cursor.execute('''CREATE TABLE userPreferences(sysdefname TEXT,description TEXT, type TEXT, Value TEXT, 'Default' TEXT, possible TEXT)''')
 		logifvb('Table created')
-		cursor.execute('''INSERT INTO password VALUES(0, 'master',?)''', (''.join(random.choices(string.hexdigits, k=257)),))
+
+		# Insert a random password that looks like a hash
+		cursor.execute('''INSERT INTO password VALUES(0, 'master',?)''', (''.join(random.choices(string.hexdigits, k=256)),))
 		logifvb('master password entered')
+
+		# Creates random 'password' file
 		passwords= []
 		for index in range(1, random.randrange(10,40)):
 			name 	= encsp(''.join(random.choices(string.ascii_letters, k=random.randrange(5,15))),'.'*random.randrange(1,28))
@@ -106,6 +119,8 @@ def createRandomFile(num, printall, color):
 			logifvb(pwd)
 		cursor.executemany('''INSERT INTO password VALUES(?,?,?)''', passwords)
 		logifvb('Random passwords entered')
+
+		# Creates random user actions
 		actionsls = ['help','get','new','changepassword','generate','quit','delete','changecommand','exportpwd','exportlog',
 		'import file','user preferences','backup now']
 		actions = []
@@ -115,6 +130,8 @@ def createRandomFile(num, printall, color):
 			logifvb(act)
 		cursor.executemany('''INSERT INTO commands VALUES(?,?)''',actions)
 		logifvb('actions entered')
+
+		# Create random log files
 		lgs = []
 		pwdl = '.'*random.randint(1,27)
 		for p in range(random.randint(25,150)):
@@ -124,6 +141,8 @@ def createRandomFile(num, printall, color):
 			time = encsp(time,pwdl)
 			lgs.append((time,string1))
 		cursor.executemany('''INSERT INTO log VALUES(?,?)''',lgs)
+
+		# create random preference files
 		cursor.executemany(
 		'''INSERT INTO userPreferences VALUES(?,?,?,?,?,?)''', 
 		# list of preferences avaliable
@@ -152,121 +171,8 @@ def createRandomFile(num, printall, color):
 		('hashUserFile', 'Hash User File Name', 'bool', False,False, 'True,False'),
 		('createRandF','Creates random nonsense files', 'bool',False, False, 'True,False')
 		])
+
+		# Save and close file
 		file.commit()
 		cursor.close()
 		file.close()
-
-# ''INSERT INTO password VALUES (0,'master',?)''', (
-# def initialiseNewUser(self):
-# 	global colors
-# 	colors = buildColors(True)
-# 	def requestforinput(item, usedlist): 
-
-# 		# Does not allow duplicatews
-# 		i = input(colors.lightcyan('Please enter the command you want for the action %s\n' % colors.green(item)))
-
-# 		# return values if sequences has been entered before 
-# 		if i in usedlist:
-# 			print(colors.orange('%s has been used.' % i),colors.lightred('\nPlease use another one instead!'))
-# 			print(colors.lightblue('Your current list is %s' % str(usedlist)))
-# 			waitForInput(colors)
-# 			# emptyline is default set to true
-# 			emptyline() 
-# 			# Recursive func if user repeatedly inputs used functions
-# 			return requestforinput(item, usedlist) 
-# 		# returns value if values have not been used before  
-# 		return i
-
-# 	# create password table
-# 	self.cursor.execute('''CREATE TABLE password(id INT, key TEXT, password TEXT)''')
-
-# 	# create user command table
-# 	self.cursor.execute('''CREATE TABLE commands(globalcmd TEXT, usrcmd TEXT)''')
-
-# 	# create log table
-# 	self.cursor.execute('''CREATE TABLE log(logtime TEXT, log TEXT)''')
-
-# 	# create prerferences table
-# 	self.cursor.execute('''CREATE TABLE userPreferences(
-# 		sysdefname TEXT,description TEXT, type TEXT, Value TEXT, 'Default' TEXT, possible TEXT)''')
-# 	self.log('Created file')
-
-# 	self.cursor.executemany(
-# 		'''INSERT INTO userPreferences VALUES(?,?,?,?,?,?)''', 
-# 		# list of preferences avaliable
-# 		[
-
-# 		# System preferences in UI
-# 		('verbose','Shows everything', 'bool', False, False, 'True,False'), 
-# 		('copyAfterGet','Copy password after output', 'bool',True, True, 'True,False'),
-# 		('askToQuit','Ask before quit','bool',False, False, 'True,False'),
-# 		('customColor','Use custom color', 'bool',True, True, 'True,False'),
-# 		('logLogin','Record Logins','bool',True,True, 'True,False'),
-
-# 		# Exports preferences
-# 		('encExpDb','Export files are encrypted','bool',True, True, 'True,False'),
-# 		('useDefLoc','Use default export location','bool',True, True, 'True,False'),
-# 		('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
-# 		('defExpLoc','Default export location', 'location','~/Documents','~/Documents', 'Any folder'),
-
-# 		# Backup preferences
-# 		('createBcF','backup','bool',True, True, 'True,False'),
-# 		('backupFileTime','Backup Passwords time','location','d','d','h,d,w,2w,m,2m,6m,y,off'),
-# 		('backupLocation','The location of back-up','location','~/Library/.pbu', '~/Library/.pbu','Any folder'),
-# 		('hashBackupFile','Hashing the Backup File', 'bool', True,True, 'True,False'),
-
-# 		# Extrasecure 
-# 		('hashUserFile', 'Hash User File Name', 'bool', False,False, 'True,False'),
-# 		('createRandF','Creates random nonsense files', 'bool',False, False, 'True,False')
-# 		])
-
-# 	# Save master password
-# 	self.cursor.execute('''INSERT INTO password VALUES (0,'master',?)''', (
-# 		# hashing
-# 		hashlib.pbkdf2_hmac(
-# 		# security level sha-512
-# 		'sha512',
-# 		# user inputted password-->binary values encoded in utf-32
-# 		self.password.encode('utf-32'),
-# 		# salt is generated by encrypting the user's password
-# 		''.join(sorted(self.password)).encode('utf-32'),
-# 		# times
-# 		750000).hex(),))
-
-
-# 	# different shortcuts avaliable
-# 	actions = ['get','new','changepassword','generate','quit','delete','changecommand','exportpwd','exportlog','import file','user preferences',
-# 	'backup now'] 
-
-# 	# built in function for 'Help'
-# 	defactions = ['??'] 
-
-# 	# Enters default function--> Help
-# 	self.cursor.execute('''INSERT INTO commands VALUES (?,?)''', ('help',encsp('??', self.password)))
-
-# 	for items in actions: 
-# 		# inputs user-defined passwords
-# 		ucmd = requestforinput(items, defactions)
-# 		defactions.append(ucmd)
-
-# 		# saves user defined actions
-# 		self.cursor.execute('''INSERT INTO commands VALUES(?,?)''', (items, encsp(ucmd, self.password))) 
-# 		emptyline() if not self.verbose else None
-
-# 	# Logs command input
-
-# 	# Saves file
-# 	self.file.commit()
-
-# 	# build backup file
-# 	os.mkdir(os.path.join(os.path.expanduser('~/Library'),'.pbu','.'+ hashlib.pbkdf2_hmac('sha224', self.userName.encode('utf-32'),
-# 	 b'e302b662ae87d6facf8879dc1dabc573', 500000).hex()))
-
-# 	self.buildActionsPreferences()
-
-# 	self.log('Preferences set')
-# 	self.log('Stored master password')
-# 	self.log('User commands inputted')
-# 	self.log('Backup file built')
-
-
