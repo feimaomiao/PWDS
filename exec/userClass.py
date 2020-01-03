@@ -43,8 +43,7 @@ class userInterface():
 		self.verbose = self.preferences.get('verbose')
 
 		# builds user actions
-		self.actions = {encsp(k, self.password): v for v, k in dict(self.cursor.execute('SELECT * FROM commands').fetchall()).items()}
-
+		self.actions = {v: encsp(k, self.password) for v, k in dict(self.cursor.execute('SELECT * FROM commands').fetchall()).items()}
 		# Set colors after building user preferences
 		global colors
 		colors = buildColors(self.preferences.get('customColor'))
@@ -53,7 +52,7 @@ class userInterface():
 		print(colors.darkgrey('getting preferences was successful')) if self.verbose else None
 		self.file.commit()
 		print(colors.darkgrey('Saving file and commiting user interface')) if self.verbose else None
-
+		emptyline() if not self.verbose else None
 		return None
 
 	def initialiseNewUser(self):
@@ -110,7 +109,7 @@ class userInterface():
 
 			# Backup preferences
 			('createBcF','backup','bool',True, True, 'True,False'),
-			('backupFileTime','Backup Passwords time','location','d','d','h,d,w,2w,m,2m,6m,y,off'),
+			('backupFileTime','Backup Passwords time','str in list','d','d','h,d,w,2w,m,2m,6m,y,off'),
 			('backupLocation','The location of back-up','location','~/Library/.pbu', '~/Library/.pbu','Any folder'),
 			('hashBackupFile','Hashing the Backup File', 'bool', True,True, 'True,False'),
 
@@ -134,7 +133,7 @@ class userInterface():
 
 
 		# different shortcuts avaliable
-		actions = ['get','new','changepassword','generate','quit','delete','changecommand','exportpwd','exportlog','import file','user preferences',
+		actions = ['get','new','change password','generate','quit','delete','change command','exportpwd','exportlog','import file','user preferences',
 		'backup now'] 
 		
 		# built in function for 'Help'
@@ -167,6 +166,7 @@ class userInterface():
 		self.log('Stored master password')
 		self.log('User commands inputted')
 		self.log('Backup file built')
+		self.file.commit()
 
 	def login(self):
 		try:
@@ -185,6 +185,8 @@ class userInterface():
 		except WrongPassWordError:
 			print(colors.darkgrey('Module level error raised. Raise error in __main__')) if self.verbose else None
 			raise
+		emptyline() if not self.verbose else None
+		print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
 
 	def log(self, action):
 		print(colors.darkgrey(f'Logging {action} into log file')) if self.verbose else None
@@ -196,7 +198,7 @@ class userInterface():
 		self.file.commit()
 
 	def get(self):
-
+		self.log('Called function get')
 		# Ask for user input
 		getValue = input(colors.lightblue('Please enter what do you want to get\n'))
 		emptyline() if not self.verbose else None
@@ -283,9 +285,12 @@ class userInterface():
 
 		# Saves log
 		self.file.commit()
+		emptyline() if not self.verbose else None
+		print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
 		return None
 
 	def new(self):
+		self.log('Called function new')
 		# Inserts new key into database
 		print(colors.darkgrey('Grabbing current keys from database')) if self.verbose else None
 		currentKeys = [encsp(x[1], self.password) for x in self.cursor.execute('SELECT * FROM password').fetchall()]
@@ -303,7 +308,7 @@ class userInterface():
 			print(colors.darkgrey('Going back to $new function')) if self.verbose else None
 			return self.new()
 
-		generateKeyword = list(self.actions.keys())[list(self.actions.values()).index('generate')]
+		generateKeyword = self.actions['generate']
 		print('Getting generate keyword from preference database') if self.verbose else None
 
 		# Asks for new password
@@ -351,10 +356,11 @@ class userInterface():
 		print('Saving file') if self.verbose else None
 		# Saves file--> Log and password
 		self.file.commit()
+		print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
 		return None
 
 	def changePassword(self):
-
+		self.log('Called action changePassword')
 		# Requests for password--> Requests for authenication
 		oldPassword = input(colors.yellow('Please enter your old password\n'))
 
@@ -418,6 +424,7 @@ class userInterface():
 		# Sets user password to the new password
 		self.password = newEncPassword
 
+		# Updates logs by encsp
 		newlogs = []
 		print(colors.darkgrey('Collecting current logs')) if self.verbose else None
 		for items in [(encsp(x[0], oldPassword), encsp(x[1], oldPassword)) for x in self.cursor.execute('SELECT * FROM log').fetchall()]:
@@ -428,12 +435,20 @@ class userInterface():
 
 		userCommands = []
 		print(columns.darkgrey('Collecting current user commands')) if self.verbose else None
+
+		# updatet commands by encso
 		for items in [(x[0], encsp(x[1], oldPassword)) for x in self.cursor.execute('''SELECT * FROM commands''').fetchall()]:
 			userCommands.append((items[0], encsp(items[1], newEncPassword)))
+
+
 		print(colors.darkgrey('Deleting user commands from database\nUpdating user commands')) if self.verbose else None
+
 		# Deletes commands from databases and inputs newly encrypted user commands
 		self.cursor.execute('''DELETE FROM commands''')
 		self.cursor.executemany('''INSERT INTO commands VALUES (?,?)''', userCommands)
+		print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
+		emptyline() if not self.verbose else None
+
 		return None
 
 	def backup(self,oldbackupName=''):
@@ -472,10 +487,11 @@ class userInterface():
 		# shutil.copy is willing to replace
 		# Copies file to backup file
 		shutil.copy2(os.path.join(os.path.expanduser('~/.password'), '.' + oldbackupName+'.db'), backupFile)
-
+		print(colors.darkgrey('.....Success!'))
 		# Logs backup
 		self.log('Backup copied successfully')
 		emptyline() if not self.verbose else None
+		return None
 
 	def checkBackup(self):
 		print(colors.blue('Checking auto backup'))
@@ -521,8 +537,10 @@ class userInterface():
 		print(colors.lightblue('Auto-backup check finished'))
 		time.sleep(random.random())
 		self.log('Auto backup check finished')
+		return None
 
 	def changeCommand(self):
+		self.log('called function changeCommand')
 		def requestforinput(item, usedlist): 
 
 			# Does not allow duplicates
@@ -589,9 +607,12 @@ class userInterface():
 
 		print(colors.darkgrey('Deleting commands from database')) if self.verbose else None
 		self.cursor.execute('DELETE FROM commands')
+
+		# Builds new encrypted user actions
 		usedActions = []
 		for items in userActions: 
 			print(colors.darkgrey('Requests for user input items %s' % items)) if self.verbose else None
+
 			# inputs user-defined passwords
 			userCommand = requestforinput(items, usedActions)
 			print(colors.darkgrey('Command was usable')) if self.verbose else None
@@ -605,10 +626,12 @@ class userInterface():
 
 		# Commands have been changed, rebuild actions.
 		self.buildActionsPreferences()
-
+		emptyline() if not self.verbose else None
+		print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
 		return None
 
 	def quit(self):
+		self.log('Called quit')
 		# Raises quit -->Goes to global scope before quits
 		if self.preferences.get('askToQuit'):
 			print(colors.darkgrey('askToQuit returns true')) if self.verbose else None
@@ -621,6 +644,7 @@ class userInterface():
 		raise normalQuit
 
 	def delete(self):
+		self.log('Called function delete')
 		print(colors.darkgrey('Getting current passwords')) if self.verbose else None
 		# Get current passwords
 		currentPwds = [(x[0], encsp(x[1],self.password), x[2]) for x in self.cursor.execute('SELECT * FROM password').fetchall()[1:]]
@@ -694,7 +718,10 @@ class userInterface():
 		if k.lower() != 'y':
 			print(colors.darkgrey('User input %s != y'% k)) if self.verbose else None
 			print(colors.blue('Password not deleted'))
+			waitForInput(colors)
+			emptyline() if not self.verbose else None
 			self.log('Password not deleted')
+			print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
 			return None
 
 		print(colors.darkgrey('Deleting entry from database')) if self.verbose else None
@@ -704,22 +731,26 @@ class userInterface():
 		self.log(f'Deleted password from{str(file)}')
 		# saves file
 		self.file.commit()
+		emptyline() if not self.verbose else None
 		return None
 
 	def help(self):
+		self.log('Called function help')
 		# Prints user help, lists all actions
 		print(colors.darkgrey('Getting user current commmands')) if self.verbose else None
 		for userActions in self.actions.items():
 
 			# Formatted user actions
-			print(colors.cyan('{0:16}'.format(userActions[0])), colors.lightgreen('{0:16}'.format(userActions[1])))
+			print(colors.cyan('{0:16}'.format(userActions[0]))+'||', colors.lightgreen('{0:16}'.format(userActions[1])))
 		waitForInput(colors)
 
 		# Clears listed line , prevents data breach 
 		emptyline() if not self.verbose else None
+		print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
 		return None
 
 	def exportPassword(self):
+		self.log('Called function exportPassword')
 		print(colors.darkgrey('Getting export type from database\nGetting export location from database')) if self.verbose else None
 		# Gets export file type
 		exportType = self.preferences.get('exportType')
@@ -846,6 +877,7 @@ class userInterface():
 		waitForInput(colors)
 
 		emptyline() if not self.verbose else None
+		print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
 		return None
 
 	def getExportLocation(self):
@@ -884,6 +916,7 @@ class userInterface():
 			return exportLocation
 
 	def exportLog(self):
+		self.log('Called function exportLog')
 		print(colors.darkgrey('Getting export file type')) if self.verbose else None
 		# Exports user log
 		exportType = self.preferences.get('exportType')
@@ -983,9 +1016,11 @@ class userInterface():
 		waitForInput(colors)
 
 		emptyline() if not self.verbose else None
+		print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
 		return None
 
 	def importFile(self):
+		self.log('Called function importFile')
 		# import files from backups 
 
 		print(colors.darkgrey('Generating backup folder name')) if self.verbose else None
@@ -1028,8 +1063,11 @@ class userInterface():
 			self.log('File is not imported')
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
+		print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
+		return None
 
 	def changePreferences(self):
+		self.log('Called function changePreferences')
 		# get current preferences
 		emptyline() if not self.verbose else None
 
@@ -1065,6 +1103,7 @@ class userInterface():
 
 		# Get difference of preferences from two different sets
 		difference = dict(set(self.preferences.items())-set(oldPreferences.items()))
+
 		print(colors.darkgrey('Building new functions')) if self.verbose else None
 		print(difference.items())
 
@@ -1135,41 +1174,27 @@ class userInterface():
 				print(colors.yellow(f'Please allow up to {0.123*numsOfRandFiles} seconds'))
 				createRandomFile(num=numsOfRandFiles, printall=self.verbose, color=colors.darkgrey)
 				print(colors.yellow('Done!'))
+
+		# Change user files
 		if 'hashUserFile' in difference.keys():
+
+			# Quits current file first
 			self.cursor.close()
 			self.file.commit()
 			self.file.close()
-			os.rename(os.path.join(os.path.expanduser('~'),'.password','.'+oldUserName+'.db'),
+
+			# Move file
+			shutil.copy2(
+				# Old user file
+				os.path.join(os.path.expanduser('~'),'.password','.'+oldUserName+'.db'),
+				# New user file
 				os.path.join(os.path.expanduser('~'),'.password','.'+self.userName+'.db'))
+
+			# Sets up current user file
 			self.file = sqlite3.connect(os.path.join(os.path.expanduser('~'),'.password','.'+self.userName+'.db'))
 			self.cursor = self.file.cursor()
+
+			os.remove(os.path.join(os.path.expanduser('~/.password'),'.'+oldUserName+'.db'))
+
+		print(colors.darkgrey('Redirecting to user interface'))	 if self.verbose else None
 		return None
-
-
-		# os.path.
-		time.sleep(10000)
-
-
-
-
-
-
-
-
-
-# ('encExpDb','Export files are encrypted','bool',True, True, 'True,False'),
-# ('useDefLoc','Use default export location','bool',True, True, 'True,False'),
-# ('exportType','Export type','str in list','db','db ', 'csv,db,json,txt'),
-# ('defExpLoc','Default export location', 'string',os.path.expanduser('~/Documents'),
-#  os.path.expanduser('~/Documents'), 'True,False'),
-
-# # Backup preferences
-# ('createBcF','backup','bool',True, True, 'True,False'),
-# ('backupFileTime','Backup Passwords time','string','d','d','h,d,w,2w,m,2m,6m,y,off'),
-# ('backupLocation','The location of back-up','string',os.path.expanduser('~/Library/.pbu'), os.path.expanduser('~/Library/.pbu'), ''),
-# ('hashBackupFile','Hashing the Backup File', 'bool', True,True, 'True,False'),
-
-# # Extrasecure 
-# ('hashUserFile', 'Hash User File Name', 'bool', False,False, 'True,False'),
-# ('createRandF','Creates random nonsense files', 'bool',False, False, 'True,False')
-# ])

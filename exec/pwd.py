@@ -9,21 +9,6 @@ global colors
 # Assign colors to colors --> Default is true
 colors = buildColors(True)
 
-# Functions in userInterface
-
-
-	# def UI(self):
-	# 	userAction = input(colors.lightblue('Please enter what do you want to do:\n'))
-	# 	emptyline() if not self.verbose else None
-	# 	if userAction not in self.actions.keys():
-	# 		print(colors.red(userAction), colors.yellow('is not in your list of commands!\nPlease refer to the chart below for your actions!'))
-	# 		self.help()
-	# 		emptyline() if not self.verbose else None
-	# 		self.UI()
-	# 	else:
-	# 		action = self.actions.get(userAction)
-	# 		print(action)
-
 def checkdir(): 
 
 	# Clear screen
@@ -42,6 +27,40 @@ def checkdir():
 	print(colors.blue('Initialising user workspace:') ,colors.lightgrey(text))
 	time.sleep(random.random())
 	emptyline()
+
+def uifunc(user):
+	colors = buildColors(user.preferences.get('customColor'))
+	print(colors.darkgrey('building colors in user interface finished')) if user.verbose else None
+	funcs= {
+	user.actions['help']			: lambda: user.help(),
+	user.actions['get']				: lambda: user.get(),
+	user.actions['new']				: lambda: user.new(),
+	user.actions['change password']	: lambda: user.changePassword(),
+	user.actions['quit']			: lambda: user.quit(),
+	user.actions['delete']			: lambda: user.delete(),
+	user.actions['change command'] 	: lambda: user.changePassword(),
+	user.actions['exportpwd']		: lambda: user.exportPassword(),
+	user.actions['exportlog']		: lambda: user.exportLog(),
+	user.actions['backup now']		: lambda: user.backup(),
+	user.actions['import file']		: lambda: user.importFile(),
+	user.actions['user preferences']: lambda: user.changePreferences(),
+	}
+	print(colors.darkgrey('Building actions finished')) if user.verbose else None
+	user.log('User interface')
+	emptyline() if not user.verbose else None
+	while True:
+		act = input(colors.yellow('Please enter the action you would like to proceed'))
+		if act in funcs.keys():
+			print(colors.darkgrey('Called function successfully')) if user.verbose else None
+			funcs.get(act)()
+		else:
+			print(colors.darkgrey('No action inputted')) if user.verbose else None
+			user.log('No action returned')
+			user.help()
+			waitForInput(colors)
+			emptyline() if not user.verbose else None
+			
+
 
 def linktodb():
 
@@ -85,9 +104,9 @@ def linktodb():
 
 		# Returning user will be directed immediately to login page
 		user.login()
-		user.delete()
-		user.new()
-		user.new()
+		# user.delete()
+		# user.new()
+		# user.new()
 		# user.get()
 		# user.changePassword()
 		# user.backup()
@@ -96,8 +115,13 @@ def linktodb():
 		# user.exportPassword()
 		# user.exportLog()
 		# user.importFile()
-		# user.changePreferences()
+		# user.changePreferences() d
 		# [print('{0:40}{1:40}\n'.format(str(x), str(value))) for x, value in user.actions.items()]
+		print(user.actions)
+		user.backup()
+		# while True:
+		uifunc(user)
+ 
 		user.quit()
 	except WrongPassWordError:
 		raise 

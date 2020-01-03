@@ -24,7 +24,7 @@ class preferences():
 			return self.reqBool(colors)
 		return possible.get(usrinput)
 
-	def reqStrIL(inpLIst, colors):
+	def reqStrIL(self,inpLIst, colors):
 		usrinput = input(colors.green(f'Type=String in list\nPossible={inpLIst}\nPlease enter your choice\n'))
 		if usrinput not in inpLIst:
 			self.clear()
