@@ -1,7 +1,7 @@
 # PWDS #
 - - - -
 ## What is PWDS ##
-* PWDS is a local, command line encrypted password storage system with different actions and prefernces avaliable 
+* PWDS is a local, light weight command line encrypted password storage system with different actions and preferences avaliable 
 * The entire program started with a little summer project and I never thought it would develop into a large-scale project :smiling_imp:
 * The whole program is built on python3
 - - - -
@@ -28,4 +28,4 @@ Avaliable output format includes:
 
 .txt|.csv|.json| .db  
 ---- | ----| ---- | ----
-Plain text file | Comma Seperated Values file | JavaScript Object Notation | SQL Database FIle   
+Plain text file | Comma Seperated Values file | JavaScript Object Notation | SQL Database File   

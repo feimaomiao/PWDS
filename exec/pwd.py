@@ -1,7 +1,7 @@
 # usr/bin/python3
 import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip
-from funcs import *
-from userClass import userInterface
+from .funcs import *
+from .userClass import userInterface
 from datetime import datetime, timedelta
 
 global colors
@@ -38,7 +38,7 @@ def uifunc(user):
 	user.actions['change password']	: lambda: user.changePassword(),
 	user.actions['quit']			: lambda: user.quit(),
 	user.actions['delete']			: lambda: user.delete(),
-	user.actions['change command'] 	: lambda: user.changePassword(),
+	user.actions['change command'] 	: lambda: user.changeCommand(),
 	user.actions['exportpwd']		: lambda: user.exportPassword(),
 	user.actions['exportlog']		: lambda: user.exportLog(),
 	user.actions['backup now']		: lambda: user.backup(),
@@ -59,7 +59,7 @@ def uifunc(user):
 			user.help()
 			waitForInput(colors)
 			emptyline() if not user.verbose else None
-			
+
 
 
 def linktodb():
@@ -104,25 +104,9 @@ def linktodb():
 
 		# Returning user will be directed immediately to login page
 		user.login()
-		# user.delete()
-		# user.new()
-		# user.new()
-		# user.get()
-		# user.changePassword()
-		# user.backup()
-		# user.changeCommand()
-		# user.checkBackup()
-		# user.exportPassword()
-		# user.exportLog()
-		# user.importFile()
-		# user.changePreferences() d
-		# [print('{0:40}{1:40}\n'.format(str(x), str(value))) for x, value in user.actions.items()]
-		print(user.actions)
-		user.backup()
-		# while True:
+
 		uifunc(user)
  
-		user.quit()
 	except WrongPassWordError:
 		raise 
 	except normalQuit:
@@ -172,4 +156,5 @@ def main():
 			'''))
 		quit()
 
-main()
+if __name__ == '__main__':
+	main()

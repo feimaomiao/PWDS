@@ -1,4 +1,4 @@
-from funcs import *
+from .funcs import *
 import shutil, os
 class usrp():
 	def __init__(self, pref, index):

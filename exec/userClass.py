@@ -1,7 +1,8 @@
-import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip, alterPrefs, copy
+import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip
+from .alterPrefs import preferences as alterPreferences, usrp
 from datetime import datetime, timedelta
-from funcs import *
-from enc import encrypt as enc, decrypt as dec, encsp
+from .funcs import *
+from .enc import encrypt as enc, decrypt as dec, encsp
 
 # user class. All actions are done under a class structure.
 class userInterface():
@@ -296,7 +297,7 @@ class userInterface():
 		currentKeys = [encsp(x[1], self.password) for x in self.cursor.execute('SELECT * FROM password').fetchall()]
 		# Asks for key value
 		newInputKey = input(colors.cyan('Please enter what do you want to enter:\n'))
-		print(colors.darkgrey('Looking through current keys'))
+		print(colors.darkgrey('Looking through current keys')) if self.verbose else None
 
 		if newInputKey in currentKeys:
 			print('%s is found in current Keys') if self.verbose else None
@@ -434,7 +435,7 @@ class userInterface():
 		self.cursor.executemany('''INSERT INTO log VALUES (?,?)''',newlogs)
 
 		userCommands = []
-		print(columns.darkgrey('Collecting current user commands')) if self.verbose else None
+		print(colors.darkgrey('Collecting current user commands')) if self.verbose else None
 
 		# updatet commands by encso
 		for items in [(x[0], encsp(x[1], oldPassword)) for x in self.cursor.execute('''SELECT * FROM commands''').fetchall()]:
@@ -868,7 +869,7 @@ class userInterface():
 					print(colors.darkgrey('Dumping dictionary items into json file')) if self.verbose else None
 					# Put into file
 					json.dump(encList, exportFile)
-		print(colors.darkgrey('All entries inputted into export files'))
+		print(colors.darkgrey('All entries inputted into export files')) if self.verbose else None
 		print(colors.red('DONE'))
 		# Tells user action has been finished
 
@@ -880,11 +881,11 @@ class userInterface():
 		print(colors.darkgrey('Redirecting to user interface')) if self.verbose else None
 		return None
 
-	def getExportLocation(self):
+	def getExportLocation(self, forceenter):
 		# Gets user Export Location //From preferences
 		print(colors.darkgrey('Getting user export locations')) if self.verbose else None
 		exportLocation = ''
-		if self.preferences.get('useDefLoc'):
+		if forceenter:
 			print(colors.darkgrey('Using default export location')) if self.verbose else None
 			exportLocation = os.path.expanduser(self.preferences.get('defExpLoc'))
 		else:
@@ -965,7 +966,7 @@ class userInterface():
 				self.log('Password Export Created')
 				if exportType == 'txt':
 					# Text file
-					print(colors.darkgrey('File created.\nInitialising file'))
+					print(colors.darkgrey('File created.\nInitialising file')) if self.verbose else None
 					exportFile.write('{0:30} {1}'.format('Timestamp', 'Action'))
 					# Creates header in txt file
 					for entries in cLogs:
@@ -1077,7 +1078,7 @@ class userInterface():
 		
 		# Give out a list of 'preference' class
 		# Change list of class to a big class in which changing operations can be done
-		preferenceClass = alterPrefs.preferences([alterPrefs.usrp(x, count) for count, x in enumerate(
+		preferenceClass = alterPreferences([usrp(x, count) for count, x in enumerate(
 			[row for row in self.cursor.execute('SELECT * FROM userPreferences').fetchall()], start=1)])
 		print(colors.darkgrey('Building preference model')) if self.verbose else None
 

@@ -1,5 +1,5 @@
 import sys, os, random, string, shutil, sqlite3, json
-from enc import encsp as encsp
+from .enc import encsp as encsp
 try:
 	import readchar
 except ModuleNotFoundError: 

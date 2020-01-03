@@ -90,3 +90,8 @@ Changed `backup` function for the `userPrefs` function
 Done sleeping. 
 Added requirements.txt
 modified gitignore
+- - - -
+### 2020/01/03 00:09 ###
+Finished user interface file!!  
+Modified verbose functions  
+Happy new year everyone!!  
