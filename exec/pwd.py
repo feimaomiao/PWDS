@@ -12,7 +12,7 @@ colors = buildColors(True)
 def checkdir(): 
 
 	# Clear screen
-	os.system('clear')
+	os.system('CLS') if os.name == 'nt' else os.system('clear')
 
 	text = 'Connecting to folder' 
 

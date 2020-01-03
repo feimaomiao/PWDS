@@ -14,12 +14,9 @@
 ## Possible problems you may encounter ##  
 ### WrongPasswordError ###  
 * As its name suggests, you probably entered the wrong password. 
-* As for extra security, we do not allow 'try agains' ~~we are just being mean~~
+* As for extra security, we do not allow 'try agains' ~~we are just being mean~~  
 * The occurance of wrong password entering will not affect your database! However, we will record every single attempt to login if 'Log login' preference is set to true
 
-### EncryptionError ###
-* As of today (12/14/2019), we only have 128 characters avaliable for password.
-* Any character used outside of these 128 characters will not be encrypted and will raise encryption error
 
 - - - -
 ## Exports ##
@@ -28,4 +25,6 @@ Avaliable output format includes:
 
 .txt|.csv|.json| .db  
 ---- | ----| ---- | ----
-Plain text file | Comma Seperated Values file | JavaScript Object Notation | SQL Database File   
+Plain text file | Comma Seperated Values file | JavaScript Object Notation | SQL Database File  
+- - - -
+##   
