@@ -116,10 +116,10 @@ def linktodb():
 		raise 
 		# user enters key binding ctrl+c
 	except KeyboardInterrupt:
-		print('\n\n\n\n\n\n\n\n')
+		os.system('CLS') if os.name == 'nt' else os.system('clear')
 		user.log('User quits (\'KeyboardInterrupt\')')
-		raise normalQuit
 		user.checkBackup() if user.preferences.get('createBackupFile') else None
+		raise normalQuit
 	except instantQuit:
 		raise normalQuit
 	else:
