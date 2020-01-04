@@ -71,7 +71,9 @@ cd into git directory
 `createRandF`: Creates random files and puts it in the same folder. Can't easily distinguish which one is your file!!
 - - - -
 ## Ran into a problem? ##
-Please put in an issue! I will try my best to fix it!  
+Any randon quits should be a product of an error.
+Please enable the `verbose` function if a problem occurs and tell me in the issues!
+Thanks!
 - - - -
 ###### A command line password starage system, PWDS
 ###### ©2020 Matthew Lam
