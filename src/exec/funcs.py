@@ -84,7 +84,7 @@ def createRandomFile(num, printall, color):
 		print(color(pval)) if p else None
 
 	# List of random names
-	names = json.loads(open('random.json').read())
+	names = json.loads(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'random.json')).read())
 	for count in range(num):
 		logifvb(count)
 
@@ -173,9 +173,9 @@ def createRandomFile(num, printall, color):
 		])
 
 		# Save and close file
-		print(colors.darkgrey('Saving file\nDeleting cursor file\nClosing file')) if not self.verbose else None
+		logifvb('Saving file\nDeleting cursor file\nClosing file')
 		file.commit()
 		cursor.close()
 		file.close()
-		print(colors.darkgrey('Returning to user interface')) if not self.verbose else None
-		emptyline() if not self.verbose else None
+		logifvb('Returning to user interface')
+		return None

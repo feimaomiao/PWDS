@@ -53,14 +53,14 @@ def uifunc(user):
 		if act in funcs.keys():
 			print(colors.darkgrey('Called function successfully')) if user.verbose else None
 			funcs.get(act)()
+			emptyline() if not user.verbose else None
 		else:
 			print(colors.darkgrey('No action inputted')) if user.verbose else None
 			user.log('No action returned')
 			user.help()
 			waitForInput(colors)
 			emptyline() if not user.verbose else None
-
-
+	return None
 
 def linktodb():
 
