@@ -95,3 +95,7 @@ modified gitignore
 Finished user interface file!!  
 Modified verbose functions  
 Happy new year everyone!!  
+- - - -
+### 2020/01/03 16:59 ###
+Modified some export settings-- found some bugs
+Changed readme.md and is ready to launch!!!
