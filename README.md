@@ -17,15 +17,15 @@
 * As for extra security, we do not allow 'try agains' ~~we are just being mean~~  
 * The occurance of wrong password entering will not affect your database! However, we will record every single attempt to login if 'Log login' preference is set to true
 
+- - - -  
+## Requirements ##
+Python version: 3.6 or above!(`usage of f string`)
+###Dependencies ###
+pip modules: `pyperclip`, `readchar`  
+#### How to install ####
+In terminal, cd into directory,  
+type `python3 -m pip install -r requirements.txt`
 
-- - - -
-## Exports ##
-* Sounds strange but we do let you export your saved password and logs in both encrypted and non-encrypted form.  
-Avaliable output format includes:  
-
-.txt|.csv|.json| .db  
----- | ----| ---- | ----
-Plain text file | Comma Seperated Values file | JavaScript Object Notation | SQL Database File  
 - - - -
 ##  How can I install? ##
 For unix machines you can use   
@@ -61,7 +61,7 @@ cd into git directory
 `logLogin`: Logs every login into log file. can be used to trace wrong password attempts!  
 `encExpDb`: encrypts Export database. Decrypts password before export if this preference is set to `False`  
 `useDefLoc`: Use default export location. Will prompt for a location everytime if set to `False`  
-`exportType`: Allows different output formats.  
+`exportType`: Allows different output formats, including `.db`,`.csv`,`.txt`,`.json`    
 `defExpLoc`: default export location. Default = `~/Documents`
 `createBcF`: create a backup file.
 `backupFileTime`: A regular backup time  
