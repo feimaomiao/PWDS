@@ -28,15 +28,18 @@ type `python3 -m pip install -r requirements.txt`
 
 - - - -
 ##  How can I install? ##
-For unix machines you can use   
+For unix machines you can    
+cd into this directory
 `chmod +x PWDS`  
 `./PWDS`  
+
 If you want to build from source you can also do the following:  
 clone this website  
 cd into the git directory  
 run python command `python3 zipfile -m src -p "/usr/bin/env/python3"`  
+  
 You can also do this:
-cd into git directory
+cd into git directory  
 `python3 src`
 - - - -
 ## Functions ##
