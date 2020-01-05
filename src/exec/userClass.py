@@ -44,7 +44,7 @@ class userInterface():
 
 		# Assign to verbose
 		self.verbose = self.preferences.get('verbose')
-
+		self.actions = {}
 		# builds user actions
 		self.actions = {v: encsp(k, self.__password) for v, k in dict(self.cursor.execute('SELECT * FROM commands').fetchall()).items()}
 		# Set colors after building user preferences
@@ -574,7 +574,7 @@ class userInterface():
 		'new',
 
 		# Changes user password
-		'changepassword',
+		'change password',
 
 		# generates a password of len(19)
 		'generate',
@@ -586,7 +586,7 @@ class userInterface():
 		'delete',
 		
 		# Change user commands
-		'changecommand',
+		'change command',
 		
 		# Export password database
 		'exportpwd',
