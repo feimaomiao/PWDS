@@ -95,5 +95,4 @@ class preferences():
 		return None
 
 	def returnList(self):
-		print(self.preferenceDicts)
 		return [vals for k, vals in self.preferenceDicts.items()]

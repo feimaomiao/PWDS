@@ -179,4 +179,4 @@ def createRandomFile(num, printall, color):
 		cursor.close()
 		file.close()
 		logifvb('Returning to user interface')
-		return None
+	return None
