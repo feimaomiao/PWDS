@@ -785,14 +785,14 @@ class userInterface():
 			# Creates cursor and table
 			self.log('Password Export Created')
 			for entries in currentFiles:
-				print('Writing current data into database %s/%s'%(str(currentFiles.index(entries)), str(len(currentFiles)))) if self.verbose else None
+				print(colors.darkgrey('Writing current data into database %s/%s'%(str(currentFiles.index(entries)), str(len(currentFiles))))) if self.verbose else None
 				# Insert all entries into export database
 				if entries[0] != 0:
 					# Inserts values -- can be decryted
 					if bool(self.preferences.get('encExpDb')): 
 						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', (entries[0], encsp(entries[1], self.__password), entries[2]))
 					else: 
-						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', (entries[0], encsp(entries[1], self.__password),dec(enctries[2], self.__password)))
+						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', (entries[0], encsp(entries[1], self.__password),dec(entries[2], self.__password)))
 				else:
 					# Inserts values -- hashed and cannot be decrypted
 					exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)',(entries[0], encsp(entries[1], self.__password), entries[2]))
