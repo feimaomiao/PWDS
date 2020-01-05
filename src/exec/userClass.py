@@ -939,7 +939,7 @@ class userInterface():
 			print(colors.yellow('You already have an exported file in %s! Please try again!') % exportLocation)
 			self.log('Export location has repeated file, password not exported')
 			waitForInput(colors)
-			emptyline()
+			emptyline() if not self.verbose else None
 			return None
 
 		self.log('Asked for Log output request')
