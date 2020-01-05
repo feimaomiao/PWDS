@@ -312,7 +312,7 @@ class userInterface():
 			return self.new()
 
 		generateKeyword = self.actions['generate']
-		print('Getting generate keyword from preference database') if self.verbose else None
+		print(colors.darkgrey('Getting generate keyword from preference database')) if self.verbose else None
 
 		# Asks for new password
 
@@ -730,8 +730,8 @@ class userInterface():
 		print(colors.darkgrey('Deleting entry from database')) if self.verbose else None
 		self.cursor.execute('''DELETE FROM password WHERE id = (?)''', (fileToDel,))
 		# Delete from database
-		print(colors.green(f'Password from {str(file)} deleted'))
-		self.log(f'Deleted password from{str(file)}')
+		print(colors.green(f'Password from {str(encsp(file, self.__password))} deleted'))
+		self.log(f'Deleted password from{str(encsp(file, self.__password))}')
 		# saves file
 		self.file.commit()
 		emptyline() if not self.verbose else None
@@ -1108,7 +1108,6 @@ class userInterface():
 		difference = dict(set(self.preferences.items())-set(oldPreferences.items()))
 
 		print(colors.darkgrey('Building new functions')) if self.verbose else None
-		print(difference.items())
 
 		oldBackupName = self.userName if not oldPreferences.get('hashBackupFile') else hashlib.pbkdf2_hmac('sha224', 
 				self.userName.encode('utf-32'), b'e302b662ae87d6facf8879dc1dabc573', 500000).hex() 
