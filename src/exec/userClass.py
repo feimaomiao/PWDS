@@ -768,7 +768,7 @@ class userInterface():
 			print(colors.yellow('You already have an exported file in %s! Please try again!') % exportLocation) if self.verbose else None
 			self.log('Export location has repeated file, password not exported')
 			waitForInput(colors)
-			emptyline()
+			emptyline() if not self.verbose else None
 			return None
 		print(colors.darkgrey('Saving file')) if self.verbose else None
 		self.file.commit()
@@ -844,7 +844,7 @@ class userInterface():
 
 						else:
 							# Write - hashed cannot be decrypted
-							csvWriter.writerow([encsp(entries[1]), entries[2]])
+							csvWriter.writerow([encsp(entries[1], self.__password), entries[2]])
 
 				elif exportType == 'json':
 					print(colors.darkgrey('Importing python json module')) if self.verbose else None
