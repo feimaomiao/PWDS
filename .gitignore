@@ -1,4 +1,4 @@
 .DS_Store
 .swp
 __pycache__
-/exec/__pycache__
+src/exec/__pycache__
