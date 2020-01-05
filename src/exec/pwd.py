@@ -58,7 +58,6 @@ def uifunc(user):
 			print(colors.darkgrey('No action inputted')) if user.verbose else None
 			user.log('No action returned')
 			user.help()
-			waitForInput(colors)
 			emptyline() if not user.verbose else None
 	return None
 
