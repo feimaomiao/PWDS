@@ -1059,7 +1059,7 @@ class userInterface():
 			print(colors.darkgrey('Done\nForce quit program\nRaise quit without backup')) if self.verbose else None
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
-			raise instantQuit
+			self.buildActionsPreferences()
 		else:
 			# File will not be imported
 			print(colors.lightblue('File not imported'))

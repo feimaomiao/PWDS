@@ -65,7 +65,6 @@ def linktodb():
 
 	# Asks for name
 	userName = input('Please enter your username:\n').lower()
-	emptyline()
 
 	# possible outputs if hashfile is checked
 	regFile = os.path.join(os.path.expanduser('~/.password'), '%s.db' % ('.' + userName))
@@ -103,29 +102,29 @@ def linktodb():
 
 		# Returning user will be directed immediately to login page
 		user.login()
-
 		uifunc(user)
  
 	except WrongPassWordError:
 		raise 
 	except normalQuit:
+		emptyline() if not user.verbose else None
 		# user calls function 'quit'
 		user.log('User quits (\'Command =Quit\')')
 		user.checkBackup() if user.preferences.get('createBackupFile') else None
 		raise 
 		# user enters key binding ctrl+c
 	except KeyboardInterrupt:
-		os.system('CLS') if os.name == 'nt' else os.system('clear')
+		emptyline() if not user.verbose else None
 		user.log('User quits (\'KeyboardInterrupt\')')
 		user.checkBackup() if user.preferences.get('createBackupFile') else None
 		raise normalQuit
-	except instantQuit:
-		raise normalQuit
 	else:
+		emptyline() if not user.verbose else None
+		# Ran into error, should not happen
+		print(colors.red('You ran into an error. Please re-run the previous action with option"verbose" set to true and report an issue!\nThanks!'))
+		time.sleep(10)
 		raise normalQuit
 	finally:
-		emptyline() if not user.verbose else None
-
 		# saves file
 		user.file.commit()
 
@@ -153,7 +152,5 @@ def main():
 			─.█.─█▀█.█▀█.█.▀█.█▀▄　─█.─█▄█.█▄█
 
 			'''))
+	finally:
 		quit()
-
-if __name__ == '__main__':
-	main()
