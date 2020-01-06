@@ -1,6 +1,5 @@
 import sys, os, random, string, shutil, sqlite3, json
 from .enc import encsp as encsp
-from .randomnames import name as namelist
 try:
 	import readchar
 except ModuleNotFoundError: 
@@ -82,7 +81,9 @@ def createRandomFile(num, printall, color):
 		print(color(pval)) if p else None
 
 	# List of random names
-	names = namelist
+	with open('names.json',r) as f:
+		names = json.load(f)
+
 	for count in range(num):
 		logifvb(count)
 
