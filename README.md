@@ -19,7 +19,7 @@
 
 - - - -  
 ## Requirements ##
-Python version: 3.6 or above!(`usage of f string`)
+Python version: 3.6 or above!(`usage of f string`)  
 ###Dependencies ###
 pip modules: `pyperclip`, `readchar`  
 #### How to install ####
