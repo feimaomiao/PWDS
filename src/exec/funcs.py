@@ -15,9 +15,6 @@ class WrongPassWordError(Exception):
 class normalQuit(Exception):
 	pass
 
-class instantQuit(Exception):
-	pass
-
 def buildColors(trueOrFalse):
 
 	# colors filled with actual colors
