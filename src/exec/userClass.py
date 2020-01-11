@@ -1,4 +1,4 @@
-import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip
+import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip, json, csv
 from .alterPrefs import preferences as alterPreferences, usrp
 from datetime import datetime, timedelta
 from .funcs import *
@@ -790,9 +790,9 @@ class userInterface():
 				if entries[0] != 0:
 					# Inserts values -- can be decryted
 					if bool(self.preferences.get('encExpDb')): 
-						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', (entries[0], encsp(entries[1], self.__password), entries[2]))
+						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', (entries[0], entries[1], entries[2]))
 					else: 
-						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', (entries[0], encsp(entries[1], self.__password),dec(entries[2], self.__password)))
+						exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)', (entries[0], entries[1], dec(entries[2], self.__password)))
 				else:
 					# Inserts values -- hashed and cannot be decrypted
 					exportCursor.execute('INSERT INTO exportedPasswords values (?,?,?)',(entries[0], encsp(entries[1], self.__password), entries[2]))
@@ -816,7 +816,7 @@ class userInterface():
 						if currentFiles[0] != entries:
 							# Write - can be decrypted
 							decOrNo = entries[2] if bool(self.preferences.get('encExpDb')) else dec(entries[2], self.__password)							
-							exportFile.write('{0:20}:{1}\n'.format(encsp(entries[1], self.__password), decOrNo)) 
+							exportFile.write('{0:20}:{1}\n'.format(entries[1], decOrNo)) 
 						
 						else:
 							# Write -Hashed
@@ -825,8 +825,6 @@ class userInterface():
 				elif exportType == 'csv':
 					print(colors.darkgrey('importing python csv module')) if self.verbose else None
 					# Cursor seperated files
-					import csv
-					# import the python in-built csv modle
 					print(colors.darkgrey('Creating csv writer object\nInitialising folder')) if self.verbose else None
 					csvWriter = csv.writer(exportFile)
 
@@ -840,7 +838,7 @@ class userInterface():
 						if currentFiles[0] != entries:
 							# Write - can be decrypted
 							decOrNo = entries[2] if bool(self.preferences.get('encExpDb')) else dec(entries[2], self.__password)
-							csvWriter.writerow([encsp(entries[1],self.__password), decOrNo])
+							csvWriter.writerow([entries[1], decOrNo])
 
 						else:
 							# Write - hashed cannot be decrypted
@@ -848,9 +846,6 @@ class userInterface():
 
 				elif exportType == 'json':
 					print(colors.darkgrey('Importing python json module')) if self.verbose else None
-					# I first disliked this but its actually fine -- json files. 12/12/19
-					import json
-					# import the in-built json module
 
 					encList = {}
 					# Json file only takes 'dict' type entries
@@ -862,7 +857,7 @@ class userInterface():
 						if currentFiles[0] != entries:
 							# updates dictionary -- can be decrypted
 							decOrNo = entries[2] if bool(self.preferences.get('encExpDb')) else dec(entries[2], self.__password)
-							encList.update({encsp(entries[1], self.__password): decOrNo})
+							encList.update({entries[1]: decOrNo})
 
 						else:
 							# updates dictionary -- cannot be decrypted
