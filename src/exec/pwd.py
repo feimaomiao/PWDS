@@ -3,6 +3,7 @@ import sqlite3, os, random, time, sys, hashlib, shutil, readchar, pyperclip
 from .funcs import *
 from .userClass import userInterface
 from datetime import datetime, timedelta
+from getpass import getpass
 
 global colors
 
@@ -79,7 +80,7 @@ def linktodb():
 	actualUserName = hashedName if os.path.isfile(hashedFile) else userName
 
 	# Asks for password. Password will not be shown
-	passwd = input('Please enter your password:\n') 
+	passwd = getpass(prompt='Please enter your password\n')
 
 	passwd = str(hashlib.pbkdf2_hmac('sha512', str(passwd).encode('utf-32'),
 	 ''.join(sorted(passwd)).encode('utf-32'),
@@ -102,6 +103,8 @@ def linktodb():
 
 		# Returning user will be directed immediately to login page
 		user.login()
+
+		# Runs UI function
 		uifunc(user)
  
 	except WrongPassWordError:
