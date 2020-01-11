@@ -1,5 +1,4 @@
-import sys, os, random, string, shutil, sqlite3, json, readchar
-from time import time
+import sys, os, random, string, shutil, sqlite3, json, readchar, time
 from .enc import encsp as encsp
 
 #Wrong password error 

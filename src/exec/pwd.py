@@ -139,6 +139,7 @@ def linktodb():
 def main():
 	# Checks if directory exists and initialises the screen
 	checkdir()
+	# random.seed(datetime.now())
 	try:
 		# links to database, logs in 
 		linktodb()
