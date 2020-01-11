@@ -1,10 +1,6 @@
-import sys, os, random, string, shutil, sqlite3, json
+import sys, os, random, string, shutil, sqlite3, json, readchar
+from time import time
 from .enc import encsp as encsp
-try:
-	import readchar
-except ModuleNotFoundError: 
-	# System call to install modules
-	os.system('python3 -m pip install readchar')
 
 #Wrong password error 
 class WrongPassWordError(Exception): 
@@ -68,8 +64,8 @@ def waitForInput(colors):
 	return ''
 
 def randomPwd():
-    password_characters = string.ascii_letters + string.digits + string.punctuation
-    return ''.join(random.choice(password_characters) for i in range(15))
+    password_characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(password_characters) for i in range(random.randrange(15,20)))
 
 def createRandomFile(num, printall, color):
 	# re-import string -- I don't know why it works but it does. 

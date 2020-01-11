@@ -9,7 +9,7 @@ global colors
 
 # Assign colors to colors --> Default is true
 colors = buildColors(True)
-
+random.seed(time.time())
 def checkdir(): 
 
 	# Clear screen
