@@ -70,8 +70,10 @@ class preferences():
 		while changeIndex != '':
 			self.printCurrentPrefs()
 			changeIndex = input(colors.yellow('Please enter the index of the prefernce you want to change:'))
+			# empty
 			if len(changeIndex) == 0:
 				break
+			# string
 			elif not changeIndex.isdigit() or not (int(changeIndex) <= len(self.preferenceDicts)):
 				print(colors.red('ValueError:'), colors.yellow('This is not a valid input!'))
 				break
