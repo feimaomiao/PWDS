@@ -1,6 +1,5 @@
 import sys, os, random, string, shutil, sqlite3, json, readchar
-from time import time
-from .enc import encsp as encsp
+from .enc import encsp
 
 #Wrong password error 
 class WrongPassWordError(Exception): 
