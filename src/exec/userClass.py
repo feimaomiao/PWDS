@@ -220,7 +220,7 @@ class userInterface():
 
 			waitForInput(colors)
 			emptyline() if not self.verbose else None
-
+			
 			# save file
 			self.file.commit()
 			print(colors.darkgrey('All values outputted. Calling recursive function.')) if self.verbose else None
@@ -281,7 +281,7 @@ class userInterface():
 				emptyline() if not self.verbose else None
 				# Saves file as we are not gonna hit :saveFile line
 				self.file.commit()
-				print('Returning to beginning of function $get') if self.verbose else None
+				print(colors.darkgrey('Returning to beginning of function $get'))f self.verbose else None
 				# Goes back to beginning of get()
 				self.get()
 
