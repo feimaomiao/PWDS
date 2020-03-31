@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import sys, os, random, string, shutil, sqlite3, json, readchar, time
 from .enc import encsp as encsp
+=======
+import sys, os, random, string, shutil, sqlite3, json, readchar
+from .enc import encsp
+>>>>>>> 4db179d8986ae61f78c442f983eef5141c14f433
 
 #Wrong password error 
 class WrongPassWordError(Exception): 

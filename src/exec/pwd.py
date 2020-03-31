@@ -34,17 +34,17 @@ def uifunc(user):
 	print(colors.darkgrey('building colors in user interface finished')) if user.verbose else None
 	funcs= {
 	user.actions['help']			: lambda: user.help(),
-	user.actions['get']				: lambda: user.get(),
-	user.actions['new']				: lambda: user.new(),
-	user.actions['change password']	: lambda: user.changePassword(),
+	user.actions['get']			: lambda: user.get(),
+	user.actions['new']			: lambda: user.new(),
+	user.actions['change password']		: lambda: user.changePassword(),
 	user.actions['quit']			: lambda: user.quit(),
 	user.actions['delete']			: lambda: user.delete(),
-	user.actions['change command'] 	: lambda: user.changeCommand(),
+	user.actions['change command'] 		: lambda: user.changeCommand(),
 	user.actions['exportpwd']		: lambda: user.exportPassword(),
 	user.actions['exportlog']		: lambda: user.exportLog(),
 	user.actions['backup now']		: lambda: user.backup(),
 	user.actions['import file']		: lambda: user.importFile(),
-	user.actions['user preferences']: lambda: user.changePreferences(),
+	user.actions['user preferences']	: lambda: user.changePreferences(),
 	}
 	print(colors.darkgrey('Building actions finished')) if user.verbose else None
 	user.log('User interface')
